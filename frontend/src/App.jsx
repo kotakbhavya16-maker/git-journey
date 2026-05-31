@@ -158,8 +158,9 @@ function App() {
         setData(result.data)
         setView('results')
       }
-    } catch {
-      setError('Could not connect to the backend. Make sure the Flask server is running on port 5000.')
+    } catch (err) {
+      console.error('API Error:', err)
+      setError(`Could not connect to the backend at ${API_BASE}. Details: ${err.message || 'Network Error'}`)
       setView('home')
     }
   }
