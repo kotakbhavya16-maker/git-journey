@@ -1,0 +1,19 @@
+# Dependency directories
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Python caching & env
+__pycache__/
+backend/__pycache__/
+*.pyc
+
+# Local env & databases
+.env
+backend/.env
+backend/cache.db
+*.db
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,18 @@
+{
+  "name": "GitJourney — Visual GitHub Profile Analyzer",
+  "short_name": "GitJourney",
+  "description": "Explore any GitHub developer's coding journey with AI-powered personality analysis, roasts, and shareable developer cards.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#58a6ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
