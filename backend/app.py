@@ -116,8 +116,8 @@ load_dotenv()
 app = Flask(__name__)
 
 # CORS — allow frontend dev server and production
-FRONTEND_ORIGINS = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
-CORS(app, origins=FRONTEND_ORIGINS)
+FRONTEND_ORIGINS = [orig.strip() for orig in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if orig.strip()]
+CORS(app, origins=FRONTEND_ORIGINS, allow_headers=["Content-Type", "X-GitHub-Token"])
 
 # Rate limiting — 30 requests per minute per IP
 limiter = Limiter(
@@ -143,11 +143,9 @@ def health_check():
     """Health check endpoint."""
     api_key = os.getenv("GEMINI_API_KEY", "")
     api_configured = bool(api_key and api_key != "your_gemini_api_key_here")
-    frontend_origins = os.getenv("FRONTEND_ORIGINS", "not-set")
     return jsonify({
         "status": "ok",
         "api_configured": api_configured,
-        "frontend_origins": frontend_origins,
         "message": "GitJourney API is running! 🐙"
     })
 
