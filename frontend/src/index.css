@@ -2877,3 +2877,137 @@ body {
   background-size: 16px 16px;
 }
 
+/* ============================================
+   ULTRA-RESPONSIVE MOBILE BREAKPOINTS (UPDATED)
+   ============================================ */
+
+/* --- TABLETS & SMALL LAPTOPS (max-width: 900px) --- */
+@media (max-width: 900px) {
+  .results-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* --- MOBILE PHONES (max-width: 600px) --- */
+@media (max-width: 600px) {
+  .results-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+  .results-header > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+  .results-back-btn,
+  .theme-selector-wrap,
+  .theme-select,
+  .results-pdf-btn {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  .profile-name {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* --- SMALL PHONES (max-width: 500px) --- */
+@media (max-width: 500px) {
+  /* Dynamic 3D Card Scaling to prevent overflow */
+  .share-card-tilt-wrapper {
+    transform: scale(0.85) !important;
+    transform-origin: center top !important;
+    margin-bottom: -45px !important;
+  }
+  
+  /* Hero Search Redesign for mobile */
+  .hero-search-box {
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-rows: auto auto !important;
+    gap: 0.5rem !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  .hero-search-settings-btn {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    background: var(--bg-secondary) !important;
+    border: 1.5px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    height: 48px !important;
+    width: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .hero-search-input {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    background: var(--bg-secondary) !important;
+    border: 1.5px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.75rem 1rem !important;
+    height: 48px !important;
+    width: 100% !important;
+  }
+  .hero-search-input:focus {
+    border-color: var(--accent-cyan) !important;
+  }
+  .hero-search-btn {
+    grid-column: 1 / span 2 !important;
+    grid-row: 2 !important;
+    width: 100% !important;
+    height: 48px !important;
+  }
+
+  /* Profile Battle inputs mobile */
+  .battle-input-row {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 0 auto 1.5rem !important;
+  }
+  .battle-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+  .battle-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Stacking share actions on mobile */
+  .share-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 0 auto !important;
+  }
+  .share-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* --- TINY PHONES (max-width: 380px) --- */
+@media (max-width: 380px) {
+  .share-card-tilt-wrapper {
+    transform: scale(0.70) !important;
+    transform-origin: center top !important;
+    margin-bottom: -95px !important;
+  }
+  .repos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  }
+}
+
