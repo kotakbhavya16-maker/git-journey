@@ -143,9 +143,11 @@ def health_check():
     """Health check endpoint."""
     api_key = os.getenv("GEMINI_API_KEY", "")
     api_configured = bool(api_key and api_key != "your_gemini_api_key_here")
+    frontend_origins = os.getenv("FRONTEND_ORIGINS", "not-set")
     return jsonify({
         "status": "ok",
         "api_configured": api_configured,
+        "frontend_origins": frontend_origins,
         "message": "GitJourney API is running! 🐙"
     })
 
