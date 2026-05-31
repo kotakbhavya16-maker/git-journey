@@ -36,6 +36,35 @@ function App() {
   const [searchedUser, setSearchedUser] = useState('')
   const [theme, setTheme] = useState('github-dark')
   const [exportingPdf, setExportingPdf] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState(null)
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault()
+      setInstallPrompt(e)
+    }
+
+    const handleAppInstalled = () => {
+      setInstallPrompt(null)
+      console.log('PWA installed successfully!')
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    console.log(`User response to install prompt: ${outcome}`)
+    setInstallPrompt(null)
+  }
 
   const THEMES = [
     { id: 'github-dark', label: '🐈 GitHub Dark' },
@@ -396,6 +425,11 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      {installPrompt && (
+        <button className="pwa-install-btn" onClick={handleInstallClick}>
+          📲 Install App
+        </button>
+      )}
     </div>
   )
 }
