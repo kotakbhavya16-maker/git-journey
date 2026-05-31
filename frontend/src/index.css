@@ -2819,3 +2819,61 @@ body {
   100% { left: 140%; }
 }
 
+/* --- EXECUTIVE MINIMALIST THEME (PROFESSIONAL) --- */
+.card-theme-professional {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.card-theme-professional .tech-corner {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+.card-theme-professional .share-card-name {
+  color: #f8fafc !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+.card-theme-professional .share-card-logo {
+  color: #94a3b8 !important;
+  letter-spacing: 0.15em !important;
+}
+.card-theme-professional .share-card-username {
+  color: #38bdf8 !important;
+}
+.card-theme-professional .share-card-stat-value {
+  color: #f1f5f9 !important;
+}
+.card-theme-professional .share-card-stat-label {
+  color: #64748b !important;
+}
+.card-theme-professional .share-card-stats {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+.card-theme-professional .share-card-lang-chip {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #94a3b8 !important;
+}
+.card-theme-professional .share-card-rank-badge {
+  border-color: #64748b !important;
+  color: #cbd5e1 !important;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  box-shadow: none !important;
+}
+.theme-anim-professional {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.04;
+}
+.professional-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, #ffffff 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+

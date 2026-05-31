@@ -7,7 +7,8 @@ const CARD_THEMES = [
   { id: 'cyberpunk', name: '👾 Cyberpunk Glitch' },
   { id: 'vaporwave', name: '🌅 Vaporwave Grid' },
   { id: 'matrix', name: '🟢 Matrix Terminal' },
-  { id: 'gold', name: '✨ Golden Foil' }
+  { id: 'gold', name: '✨ Golden Foil' },
+  { id: 'professional', name: '💼 Executive Minimalist' }
 ]
 
 export default function ShareableCard({ profile, stats, languages, ai }) {
@@ -155,6 +156,11 @@ export default function ShareableCard({ profile, stats, languages, ai }) {
             {currentTheme.id === 'gold' && (
               <div className="theme-anim-gold">
                 <div className="gold-shimmer" />
+              </div>
+            )}
+            {currentTheme.id === 'professional' && (
+              <div className="theme-anim-professional">
+                <div className="professional-grid" />
               </div>
             )}
 
