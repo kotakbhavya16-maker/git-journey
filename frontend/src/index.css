@@ -454,6 +454,11 @@ body {
   gap: 1.5rem;
 }
 
+.results-grid > * {
+  min-width: 0;
+}
+
+
 @media (min-width: 1024px) {
   .results-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -2917,13 +2922,6 @@ body {
 
 /* --- SMALL PHONES (max-width: 500px) --- */
 @media (max-width: 500px) {
-  /* Dynamic 3D Card Scaling to prevent overflow */
-  .share-card-tilt-wrapper {
-    transform: scale(0.85) !important;
-    transform-origin: center top !important;
-    margin-bottom: -45px !important;
-  }
-  
   /* Hero Search Redesign for mobile */
   .hero-search-box {
     display: grid !important;
@@ -3000,13 +2998,70 @@ body {
   }
 }
 
+/* --- MOBILE PHONES (max-width: 600px) --- */
+@media (max-width: 600px) {
+  .share-card-inner {
+    padding: 1.25rem !important;
+    gap: 1rem !important;
+  }
+  .share-card-avatar-container {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  .share-card-name {
+    font-size: 1.1rem !important;
+  }
+  .share-card-rank-badge {
+    font-size: 0.6rem !important;
+    padding: 0.15rem 0.4rem !important;
+  }
+  .share-card-stats {
+    padding: 0.5rem 0.25rem !important;
+    gap: 0.25rem !important;
+  }
+  .share-card-stat-value {
+    font-size: 1rem !important;
+  }
+  .share-card-stat-label {
+    font-size: 0.5rem !important;
+  }
+  .share-card-langs {
+    gap: 0.25rem !important;
+  }
+  .share-card-lang-chip {
+    padding: 0.15rem 0.5rem !important;
+    font-size: 0.6rem !important;
+  }
+  .share-card-footer {
+    padding-top: 0.5rem !important;
+    margin-top: 0.25rem !important;
+  }
+  .share-card-barcode {
+    gap: 1px !important;
+  }
+  .barcode-line {
+    height: 12px !important;
+  }
+  .share-card-url {
+    font-size: 0.6rem !important;
+  }
+  .profile-stats-row {
+    gap: 0.75rem !important;
+    justify-content: center !important;
+  }
+  .profile-stat {
+    min-width: 65px !important;
+  }
+  .profile-stat-value {
+    font-size: 1.25rem !important;
+  }
+  .profile-stat-label {
+    font-size: 0.6rem !important;
+  }
+}
+
 /* --- TINY PHONES (max-width: 380px) --- */
 @media (max-width: 380px) {
-  .share-card-tilt-wrapper {
-    transform: scale(0.70) !important;
-    transform-origin: center top !important;
-    margin-bottom: -95px !important;
-  }
   .repos-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
   }
