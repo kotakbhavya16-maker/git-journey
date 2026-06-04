@@ -101,7 +101,7 @@ function App() {
         pdfInstance.text('GITJOURNEY DEVELOPER REPORT', margin, 12)
         pdfInstance.text('gitjourney.dev', pageWidth - margin, 12, { align: 'right' })
         
-        pdfInstance.setStrokeColor(226, 232, 240) // Slate-200
+        pdfInstance.setDrawColor(226, 232, 240) // Slate-200
         pdfInstance.setLineWidth(0.2)
         pdfInstance.line(margin, 14, pageWidth - margin, 14)
 
@@ -122,7 +122,7 @@ function App() {
         pdfInstance.setTextColor(37, 99, 235) // Blue-600
         pdfInstance.text(title, margin, y)
         
-        pdfInstance.setStrokeColor(226, 232, 240) // Slate-200
+        pdfInstance.setDrawColor(226, 232, 240) // Slate-200
         pdfInstance.setLineWidth(0.4)
         pdfInstance.line(margin, y + 2, pageWidth - margin, y + 2)
         return y + 7
@@ -179,7 +179,7 @@ function App() {
       currentY = Math.max(currentY + 3, 58)
       pdf.setFillColor(248, 250, 252) // Slate-50 background
       pdf.rect(margin, currentY, contentWidth, 18, 'F')
-      pdf.setStrokeColor(226, 232, 240) // Slate-200 border
+      pdf.setDrawColor(226, 232, 240) // Slate-200 border
       pdf.setLineWidth(0.3)
       pdf.rect(margin, currentY, contentWidth, 18, 'S')
 
@@ -336,7 +336,7 @@ function App() {
       pdf.save(`gitjourney-report-${data.profile.username}.pdf`)
     } catch (err) {
       console.error('PDF Generation failed:', err)
-      alert('Failed to generate professional PDF. Try printing the page instead!')
+      alert('Failed to generate professional PDF: ' + err.message)
     } finally {
       setExportingPdf(false)
     }
