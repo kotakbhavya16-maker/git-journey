@@ -336,6 +336,31 @@ def get_readme():
         return jsonify({"success": False, "error": "Could not generate README."}), 500
 
 
+@app.route("/api/chat", methods=["POST"])
+def chat_with_profile():
+    """Chat about the analyzed profile using Gemini."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "No data provided"}), 400
+
+        username = data.get("username", "").strip()
+        message = data.get("message", "").strip()
+        history = data.get("history", [])
+        github_data = data.get("github_data", {})
+
+        if not username or not message:
+            return jsonify({"success": False, "error": "Missing username or message"}), 400
+
+        from ai_analyzer import chat_about_profile
+        response_text = chat_about_profile(github_data, message, history)
+        return jsonify({"success": True, "response": response_text})
+
+    except Exception as e:
+        print(f"Error in chat endpoint: {e}")
+        return jsonify({"success": False, "error": "Could not process chat request."}), 500
+
+
 @app.errorhandler(429)
 def rate_limit_exceeded(e):
     """Handle rate limit errors."""

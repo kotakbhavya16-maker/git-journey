@@ -300,3 +300,66 @@ Feel free to explore my repositories or get in touch for collaboration!
 """
     return {"markdown": markdown.strip()}
 
+
+def chat_about_profile(github_data, message, history):
+    """Chat about a developer's profile using Gemini, passing the full context."""
+    if not configure_gemini():
+        return "I'm currently running in fallback mode and my AI brain is offline. Please set a valid GEMINI_API_KEY to start chatting!"
+
+    model = genai.GenerativeModel("gemini-2.0-flash")
+
+    # Build developer summary context
+    profile = github_data.get("profile", {})
+    stats = github_data.get("stats", {})
+    languages = github_data.get("languages", [])
+    achievements = github_data.get("achievements", [])
+    timeline = github_data.get("timeline", [])
+    top_repos = github_data.get("repos", []) or github_data.get("repos_summary", [])
+
+    unlocked_badges = [a["name"] for a in achievements if a.get("unlocked")]
+    top_langs = ", ".join([f"{l['name']} ({l['percentage']}%)" for l in languages[:5]])
+    timeline_str = ", ".join([f"{t['year']}: {t['repos']} repos" for t in timeline])
+    repos_str = "\n".join([f"- {r['name']}: {r.get('description', 'No desc')} (Stars: {r.get('stars', 0)}, Language: {r.get('language', 'N/A')})" for r in top_repos[:5]])
+
+    system_instruction = f"""You are GitJourney AI, a highly knowledgeable and supportive AI assistant that knows everything about the GitHub developer '{profile.get('name') or profile.get('username')}' (@{profile.get('username')}).
+Your goal is to answer the user's questions about this developer's coding profile, stats, repositories, achievements, personality, strengths, and weaknesses.
+
+Developer profile data for your reference:
+- Name: {profile.get('name')}
+- Username: {profile.get('username')}
+- Biography: {profile.get('bio')}
+- Location: {profile.get('location')}
+- Total Repos: {stats.get('total_repos')} ({stats.get('original_repos')} original, {stats.get('forked_repos')} forked)
+- Total Stars: {stats.get('total_stars')}
+- Total Followers: {profile.get('followers')}
+- Account Age: {stats.get('account_age_years')} years on GitHub
+- Programming Languages: {top_langs}
+- Annual Activity Timeline: {timeline_str}
+- Earned Achievements: {', '.join(unlocked_badges) if unlocked_badges else 'None yet'}
+- Top Repositories:
+{repos_str}
+
+Please reply in a helpful, friendly, and professional developer tone. 
+Keep your answers relatively concise, informative, and clean. You can use markdown bullet points where appropriate.
+If the user asks questions about things outside of this developer, politely remind them that you are here to analyze this specific developer's profile and projects.
+"""
+
+    contents = [
+        {"role": "user", "parts": [system_instruction + "\n\nFirst question: Hello! I'm interested in learning about this developer."]},
+        {"role": "model", "parts": [f"Hello! I am GitJourney AI. I've analyzed @{profile.get('username')}'s GitHub coding journey. I can tell you about their tech stack, key projects, active coding years, personality, achievements, and suggestions to make their profile stronger. What would you like to know?"]}
+    ]
+
+    for h in history:
+        role = "user" if h["role"] == "user" else "model"
+        # Make sure text exists
+        contents.append({"role": role, "parts": [h.get("text", "")]})
+
+    contents.append({"role": "user", "parts": [message]})
+
+    try:
+        response = model.generate_content(contents)
+        return response.text.strip()
+    except Exception as e:
+        print(f"Error calling chat Gemini: {e}")
+        return "I'm sorry, I encountered an issue analyzing this profile data. Please try again in a moment."
+

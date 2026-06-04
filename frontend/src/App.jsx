@@ -17,6 +17,8 @@ import ContributionHeatmap from './components/ContributionHeatmap'
 import TopRepos from './components/TopRepos'
 import CommitActivity from './components/CommitActivity'
 import ReadmeGenerator from './components/ReadmeGenerator'
+import ProfileStrength from './components/ProfileStrength'
+import GitJourneyChatbot from './components/GitJourneyChatbot'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
@@ -839,7 +841,7 @@ function App() {
                   </div>
                 )}
 
-                {/* Journey Summary & Tips */}
+                {/* Journey Summary */}
                 {data.ai && (
                   <motion.div
                     className="card grid-col-span-2"
@@ -857,21 +859,19 @@ function App() {
                     <div className="journey-summary-text">
                       {data.ai.journey_summary}
                     </div>
-
-                    {data.ai.tips && data.ai.tips.length > 0 && (
-                      <div className="journey-tips">
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                          💡 Growth Tips
-                        </div>
-                        {data.ai.tips.map((tip, i) => (
-                          <div className="journey-tip" key={i}>
-                            <span className="journey-tip-icon">✦</span>
-                            {tip}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </motion.div>
+                )}
+
+                {/* Profile Strength suggestions */}
+                {data.ai && (
+                  <div className="grid-col-span-2">
+                    <ProfileStrength 
+                      profile={data.profile} 
+                      stats={data.stats} 
+                      achievements={data.achievements} 
+                      tips={data.ai.tips} 
+                    />
+                  </div>
                 )}
 
                 {/* Top Repositories with Deep Dive */}
@@ -906,6 +906,9 @@ function App() {
 
               {/* Profile Battle */}
               <ProfileBattle />
+
+              {/* AI Chatbot Assistant */}
+              <GitJourneyChatbot githubData={data} />
             </div>
           </motion.div>
         )}
