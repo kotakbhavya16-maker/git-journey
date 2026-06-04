@@ -28,7 +28,6 @@ export default function CommitActivity({ contributions }) {
     >
       <div className="card-header" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span className="card-header-icon">⏰</span>
           <div>
             <div className="card-header-title">Commit Activity Peaks</div>
             <div className="card-header-subtitle">When this developer is most active</div>

@@ -13,7 +13,6 @@ export default function DevPersonality({ personality }) {
       <div className="personality-bg-glow" />
 
       <div className="card-header" style={{ justifyContent: 'center' }}>
-        <span className="card-header-icon">🧬</span>
         <div className="card-header-title">Developer DNA</div>
       </div>
 

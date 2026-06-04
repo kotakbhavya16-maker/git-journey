@@ -67,7 +67,6 @@ export default function ContributionHeatmap({ contributions }) {
       transition={{ duration: 0.5, delay: 0.15 }}
     >
       <div className="card-header">
-        <span className="card-header-icon">📊</span>
         <div>
           <div className="card-header-title">Contribution Heatmap</div>
           <div className="card-header-subtitle">

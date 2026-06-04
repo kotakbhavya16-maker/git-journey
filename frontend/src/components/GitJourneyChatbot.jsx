@@ -30,7 +30,7 @@ export default function GitJourneyChatbot({ githubData }) {
     setLoading(true)
 
     // Build history in the format expected by the backend
-    const chatHistory = messages.map((m) => ({
+    const chatHistory = messages.slice(1).map((m) => ({
       role: m.sender === 'user' ? 'user' : 'model',
       text: m.text
     }))

@@ -48,7 +48,6 @@ export default function ReadmeGenerator({ githubData }) {
     >
       <div className="card-header" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span className="card-header-icon">📝</span>
           <div>
             <div className="card-header-title">GitHub Profile README Generator</div>
             <div className="card-header-subtitle">Create a stunning bio for your GitHub landing page</div>
@@ -57,7 +56,7 @@ export default function ReadmeGenerator({ githubData }) {
 
         {!markdown && !loading && (
           <button className="readme-generate-btn" onClick={handleGenerate}>
-            Generate README 🚀
+            Generate README
           </button>
         )}
       </div>

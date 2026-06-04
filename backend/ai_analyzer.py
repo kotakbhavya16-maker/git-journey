@@ -301,12 +301,75 @@ Feel free to explore my repositories or get in touch for collaboration!
     return {"markdown": markdown.strip()}
 
 
+def get_rule_based_chat_fallback(github_data, message, disclaimer=""):
+    """Generate helpful developer metric answers locally when Gemini is unavailable or rate limited."""
+    message_lower = message.lower()
+    
+    profile = github_data.get("profile", {})
+    stats = github_data.get("stats", {})
+    languages = github_data.get("languages", [])
+    achievements = github_data.get("achievements", [])
+    top_repos = github_data.get("repos_summary", [])
+    
+    prefix = f"{disclaimer}\n\n" if disclaimer else ""
+    name_display = profile.get("name") or profile.get("username") or "this developer"
+
+    # 1. Projects / Repositories query
+    if any(k in message_lower for k in ["project", "repo", "work", "code"]):
+        if top_repos:
+            repos_list = []
+            for r in top_repos[:5]:
+                desc = r.get("description") or "No description provided."
+                repos_list.append(f"• **{r['name']}** (⭐ {r['stars']} | {r['language'] or 'N/A'})\n  {desc}")
+            return prefix + f"Here are the top projects for {name_display}:\n\n" + "\n".join(repos_list)
+        return prefix + "No public repository details are currently available."
+        
+    # 2. Languages / Tech Stack query
+    elif any(k in message_lower for k in ["language", "stack", "tech", "tool"]):
+        if languages:
+            langs_list = [f"• **{l['name']}**: {l['percentage']}%" for l in languages[:5]]
+            return prefix + f"Based on repository analytics, the primary technology stack for {name_display} is:\n\n" + "\n".join(langs_list)
+        return prefix + "No language breakdown statistics are available."
+        
+    # 3. Achievements / Badges query
+    elif any(k in message_lower for k in ["achieve", "badge", "milestone", "unlock"]):
+        unlocked = [f"• **{a['name']}**: {a['description']}" for a in achievements if a.get("unlocked")]
+        if unlocked:
+            return prefix + f"Here are the unlocked milestones for {name_display}:\n\n" + "\n".join(unlocked)
+        return prefix + "No achievements have been unlocked by this developer yet."
+        
+    # 4. Profile Summary / Stats query
+    elif any(k in message_lower for k in ["summary", "profile", "about", "stats", "tell me"]):
+        summary_text = (
+            f"Here is a summary of **{name_display}**'s GitHub presence:\n\n"
+            f"• **Username**: @{profile.get('username')}\n"
+            f"• **Bio**: {profile.get('bio') or 'No bio yet'}\n"
+            f"• **On GitHub**: {stats.get('account_age_years', 0)} years (joined {profile.get('created_at')[:7] if profile.get('created_at') else 'N/A'})\n"
+            f"• **Repositories**: {stats.get('total_repos', 0)} ({stats.get('original_repos', 0)} original, {stats.get('forked_repos', 0)} forks)\n"
+            f"• **Total Stars**: {stats.get('total_stars', 0)} stars earned\n"
+            f"• **Followers**: {profile.get('followers', 0)} followers"
+        )
+        return prefix + summary_text
+        
+    # 5. Default fallback general answer
+    lang_desc = ", ".join([l['name'] for l in languages[:3]]) if languages else "N/A"
+    return (
+        prefix +
+        f"I'm currently running in fallback mode, but here is what I know about @{profile.get('username', 'this developer')}:\n\n"
+        f"They have been active on GitHub for {stats.get('account_age_years', 0)} years, created {stats.get('total_repos', 0)} repositories, and earned {stats.get('total_stars', 0)} stars. "
+        f"Their primary programming languages are **{lang_desc}**. "
+        f"Ask me about their 'projects', 'languages', 'achievements', or a general 'profile summary'!"
+    )
+
+
 def chat_about_profile(github_data, message, history):
     """Chat about a developer's profile using Gemini, passing the full context."""
     if not configure_gemini():
-        return "I'm currently running in fallback mode and my AI brain is offline. Please set a valid GEMINI_API_KEY to start chatting!"
-
-    model = genai.GenerativeModel("gemini-2.0-flash")
+        return get_rule_based_chat_fallback(
+            github_data, 
+            message, 
+            disclaimer="*(Generative AI is currently offline. Showing local profile metrics fallback)*"
+        )
 
     # Build developer summary context
     profile = github_data.get("profile", {})
@@ -344,15 +407,17 @@ Keep your answers relatively concise, informative, and clean. You can use markdo
 If the user asks questions about things outside of this developer, politely remind them that you are here to analyze this specific developer's profile and projects.
 """
 
-    contents = [
-        {"role": "user", "parts": [system_instruction + "\n\nFirst question: Hello! I'm interested in learning about this developer."]},
-        {"role": "model", "parts": [f"Hello! I am GitJourney AI. I've analyzed @{profile.get('username')}'s GitHub coding journey. I can tell you about their tech stack, key projects, active coding years, personality, achievements, and suggestions to make their profile stronger. What would you like to know?"]}
-    ]
+    model = genai.GenerativeModel(
+        model_name="gemini-2.0-flash",
+        system_instruction=system_instruction
+    )
 
+    contents = []
     for h in history:
         role = "user" if h["role"] == "user" else "model"
-        # Make sure text exists
-        contents.append({"role": role, "parts": [h.get("text", "")]})
+        text = h.get("text", "").strip()
+        if text:
+            contents.append({"role": role, "parts": [text]})
 
     contents.append({"role": "user", "parts": [message]})
 
@@ -361,5 +426,9 @@ If the user asks questions about things outside of this developer, politely remi
         return response.text.strip()
     except Exception as e:
         print(f"Error calling chat Gemini: {e}")
-        return "I'm sorry, I encountered an issue analyzing this profile data. Please try again in a moment."
+        return get_rule_based_chat_fallback(
+            github_data, 
+            message, 
+            disclaimer="*(Generative AI rate limit exceeded. Showing local profile metrics fallback)*"
+        )
 

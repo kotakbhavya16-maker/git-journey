@@ -13,7 +13,6 @@ export default function Achievements({ achievements }) {
       transition={{ duration: 0.5, delay: 0.6 }}
     >
       <div className="card-header">
-        <span className="card-header-icon">🏆</span>
         <div>
           <div className="card-header-title">
             Achievements

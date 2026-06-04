@@ -50,8 +50,13 @@ def get_cached_profile(username):
             profile_data_json, cached_at = row
             # 1 hour = 3600 seconds
             if time.time() - cached_at < 3600:
-                print(f"[Cache Hit] Returning cached profile for {username}")
-                return json.loads(profile_data_json)
+                data = json.loads(profile_data_json)
+                required_keys = ["profile", "stats", "languages", "timeline", "achievements", "repos_summary", "ai", "contributions"]
+                if all(k in data for k in required_keys):
+                    print(f"[Cache Hit] Returning cached profile for {username}")
+                    return data
+                else:
+                    print(f"[Cache Stale Schema] Cache for {username} is missing required keys. Invaldating cache.")
     except Exception as e:
         print(f"Error reading cache: {e}")
     return None

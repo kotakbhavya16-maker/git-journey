@@ -25,7 +25,6 @@ export default function TopRepos({ repos, username }) {
         transition={{ duration: 0.5, delay: 0.35 }}
       >
         <div className="card-header">
-          <span className="card-header-icon">📦</span>
           <div>
             <div className="card-header-title">Top Repositories</div>
             <div className="card-header-subtitle">Click any repo to explore in detail</div>

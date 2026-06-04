@@ -63,7 +63,6 @@ export default function ProfileStrength({ profile, stats, achievements, tips }) 
       transition={{ duration: 0.5, delay: 0.65 }}
     >
       <div className="card-header">
-        <span className="card-header-icon">⚡</span>
         <div>
           <div className="card-header-title">Profile Strength Center</div>
           <div className="card-header-subtitle">AI analysis of GitHub portfolio optimization</div>
@@ -102,7 +101,7 @@ export default function ProfileStrength({ profile, stats, achievements, tips }) 
 
       {tips && tips.length > 0 && (
         <div className="strength-suggestions-box">
-          <h4 className="strength-suggestions-title">💡 Actionable Optimization Steps</h4>
+          <h4 className="strength-suggestions-title">Actionable Optimization Steps</h4>
           <div className="strength-suggestions-list">
             {tips.map((tip, i) => (
               <div className="strength-suggestion-item" key={i}>

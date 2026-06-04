@@ -11,7 +11,6 @@ export default function AiRoast({ roast }) {
       transition={{ duration: 0.5, delay: 0.5 }}
     >
       <div className="card-header">
-        <span className="card-header-icon">🔥</span>
         <div>
           <div className="card-header-title">AI Roast</div>
           <div className="card-header-subtitle">Fun observations about your coding habits</div>
@@ -19,7 +18,7 @@ export default function AiRoast({ roast }) {
       </div>
 
       {roast.overall_vibe && (
-        <div className="roast-vibe">✨ {roast.overall_vibe}</div>
+        <div className="roast-vibe">{roast.overall_vibe}</div>
       )}
 
       <div className="roast-lines">

@@ -95,6 +95,18 @@ function App() {
       const margin = 15
       const contentWidth = pageWidth - (margin * 2) // 180mm
 
+      // Helper to strip emojis and non-ASCII characters to prevent garbled PDF text (like Ø>Ý)
+      const cleanTextForPdf = (text) => {
+        if (!text) return ''
+        return String(text)
+          .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Emojis
+          .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Miscellaneous symbols
+          .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
+          .replace(/[^\x00-\x7F]/g, '')           // Strip all other non-ASCII characters
+          .replace(/\s+/g, ' ')                   // Normalize whitespaces
+          .trim()
+      }
+
       // Setup running header & footer helper
       const addHeaderAndFooter = (pdfInstance, pageNum, totalPages) => {
         // Dark slate top bar accent
@@ -110,7 +122,7 @@ function App() {
         pdfInstance.setFontSize(8)
         pdfInstance.setTextColor(100, 116, 139) // Slate-500
         pdfInstance.text('GITJOURNEY DEVELOPER INSIGHTS', margin, 12)
-        pdfInstance.text(`REPORT ID: #${data.profile.username.toUpperCase()}`, pageWidth - margin, 12, { align: 'right' })
+        pdfInstance.text(`REPORT ID: #${cleanTextForPdf(data.profile.username).toUpperCase()}`, pageWidth - margin, 12, { align: 'right' })
         
         pdfInstance.setDrawColor(226, 232, 240) // Slate-200
         pdfInstance.setLineWidth(0.25)
@@ -157,27 +169,29 @@ function App() {
       pdf.setFillColor(37, 99, 235) // Blue-600
       pdf.circle(margin + 10, 23 + 10, 10, 'F')
 
-      const monogramLetter = (data.profile.name || data.profile.username || 'G').charAt(0).toUpperCase()
+      const monogramLetter = cleanTextForPdf(data.profile.name || data.profile.username || 'G').charAt(0).toUpperCase()
       pdf.setTextColor(255, 255, 255)
       pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(22)
-      pdf.text(monogramLetter, margin + 10, 23 + 16.5, { align: 'center' })
+      pdf.text(monogramLetter, margin + 10, 23 + 13.5, { align: 'center' })
 
       // Name & Handle
       pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(16)
       pdf.setTextColor(15, 23, 42) // Slate-900
-      pdf.text(data.profile.name || data.profile.username, margin + 25, 27)
+      pdf.text(cleanTextForPdf(data.profile.name || data.profile.username), margin + 25, 27)
 
       pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(9.5)
       pdf.setTextColor(37, 99, 235) // Blue-600
-      pdf.text(`@${data.profile.username}`, margin + 25, 31.5)
+      pdf.text(`@${cleanTextForPdf(data.profile.username)}`, margin + 25, 31.5)
 
       // Location, Company, Joined
       const metaItems = []
-      if (data.profile.location && data.profile.location !== 'Unknown') metaItems.push(`Location: ${data.profile.location}`)
-      if (data.profile.company) metaItems.push(`Company: ${data.profile.company}`)
+      const loc = cleanTextForPdf(data.profile.location)
+      if (loc && loc !== 'Unknown') metaItems.push(`Location: ${loc}`)
+      const comp = cleanTextForPdf(data.profile.company)
+      if (comp) metaItems.push(`Company: ${comp}`)
       
       const joinDate = data.profile.created_at
         ? new Date(data.profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
@@ -189,16 +203,16 @@ function App() {
       pdf.setTextColor(100, 116, 139) // Slate-500
       pdf.text(metaItems.join('   |   '), margin + 25, 36.5)
 
-      // Bio Paragraph
+      // Bio Paragraph (pushed down to y=48 to avoid monogram overlap)
       pdf.setFont('helvetica', 'italic')
       pdf.setFontSize(8.5)
       pdf.setTextColor(71, 85, 105) // Slate-600
-      const bioText = data.profile.bio || 'No developer biography provided.'
+      const bioText = cleanTextForPdf(data.profile.bio || 'No developer biography provided.')
       const bioLines = pdf.splitTextToSize(bioText, contentWidth)
-      let bioEndY = 44
+      let bioEndY = 48
       bioLines.slice(0, 3).forEach((line, idx) => {
-        pdf.text(line, margin, 44 + idx * 4)
-        bioEndY = 44 + (idx + 1) * 4
+        pdf.text(line, margin, 48 + idx * 4)
+        bioEndY = 48 + (idx + 1) * 4
       })
 
       // KPI Stats Cards (Row of 5 Rounded Rects)
@@ -248,7 +262,7 @@ function App() {
       pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(10.5)
       pdf.setTextColor(37, 99, 235) // Blue-600
-      const personalityTitle = data.ai?.personality?.type_name || 'Core Developer'
+      const personalityTitle = cleanTextForPdf(data.ai?.personality?.type_name || 'Core Developer')
       pdf.text(personalityTitle, margin + leftColW / 2, dnaContentY + 10, { align: 'center' })
 
       pdf.setDrawColor(241, 245, 249)
@@ -258,7 +272,7 @@ function App() {
       pdf.setFont('helvetica', 'normal')
       pdf.setFontSize(8)
       pdf.setTextColor(71, 85, 105) // Slate-600
-      const personalityDesc = data.ai?.personality?.description || 'A developer who thrives on solving tough engineering challenges.'
+      const personalityDesc = cleanTextForPdf(data.ai?.personality?.description || 'A developer who thrives on solving tough engineering challenges.')
       const descLines = pdf.splitTextToSize(personalityDesc, leftColW - 10)
       descLines.slice(0, 7).forEach((line, idx) => {
         pdf.text(line, margin + 5, dnaContentY + 20 + idx * 4)
@@ -278,14 +292,15 @@ function App() {
       pdf.text('BEHAVIORAL DIMENSIONS', rightColX + 5, dnaContentY + 6.5)
 
       if (data.ai?.personality?.traits && data.ai.personality.traits.length > 0) {
-        data.ai.personality.traits.slice(0, 3).forEach((trait, i) => {
-          const traitY = dnaContentY + 11.5 + i * 13
+        // Show up to 4 traits with adjusted vertical coordinates to prevent overlaps
+        data.ai.personality.traits.slice(0, 4).forEach((trait, i) => {
+          const traitY = dnaContentY + 6.5 + i * 11
           
           // Trait Name & Score
           pdf.setFont('helvetica', 'bold')
           pdf.setFontSize(7.5)
           pdf.setTextColor(15, 23, 42) // Slate-900
-          pdf.text(trait.name, rightColX + 5, traitY + 2)
+          pdf.text(cleanTextForPdf(trait.name), rightColX + 5, traitY + 2)
 
           pdf.setFont('helvetica', 'bold')
           pdf.setFontSize(7.5)
@@ -305,7 +320,7 @@ function App() {
           pdf.setFont('helvetica', 'normal')
           pdf.setFontSize(7)
           pdf.setTextColor(100, 116, 139)
-          pdf.text(trait.label, rightColX + 5, traitY + 8)
+          pdf.text(cleanTextForPdf(trait.label), rightColX + 5, traitY + 8)
         })
       }
 
@@ -313,13 +328,15 @@ function App() {
       const langY = dnaContentY + 56
       const langContentY = addSectionHeader(pdf, 'CORE TECHNOLOGY STACK', langY)
 
+      const topLangs = data.languages ? data.languages.slice(0, 5) : []
+      const langCardHeight = topLangs.length > 0 ? (topLangs.length * 6.2) + 7 : 14
+
       pdf.setFillColor(248, 250, 252)
       pdf.setDrawColor(226, 232, 240)
       pdf.setLineWidth(0.3)
-      pdf.roundedRect(margin, langContentY, contentWidth, 38, 2.5, 2.5, 'FD')
+      pdf.roundedRect(margin, langContentY, contentWidth, langCardHeight, 2.5, 2.5, 'FD')
 
-      if (data.languages && data.languages.length > 0) {
-        const topLangs = data.languages.slice(0, 5)
+      if (topLangs.length > 0) {
         const barColors = [
           [37, 99, 235],   // Blue-600
           [99, 102, 241],  // Indigo-500
@@ -334,7 +351,7 @@ function App() {
           pdf.setFont('helvetica', 'bold')
           pdf.setFontSize(8.2)
           pdf.setTextColor(15, 23, 42) // Slate-900
-          pdf.text(lang.name, margin + 5, rowY + 2.5)
+          pdf.text(cleanTextForPdf(lang.name), margin + 5, rowY + 2.5)
 
           // Percentage Label
           pdf.setFont('helvetica', 'bold')
@@ -360,38 +377,56 @@ function App() {
         pdf.setFont('helvetica', 'normal')
         pdf.setFontSize(9)
         pdf.setTextColor(148, 163, 184)
-        pdf.text('No language statistics available.', margin + 5, langContentY + 18)
+        pdf.text('No language statistics available.', margin + 5, langContentY + 8)
       }
 
-      // Profile Strengthening Suggestions Section
-      const roastY = langContentY + 42
+      // Profile Strengthening Suggestions Section (Dynamic Height & Wrap Fix)
+      const roastY = langContentY + langCardHeight + 4
       const roastContentY = addSectionHeader(pdf, 'PROFILE STRENGTHENING SUGGESTIONS', roastY)
 
+      // 1. Calculate dynamic height based on wrapped lines
+      let calculatedCardHeight = 6
+      const tipsList = data.ai?.tips || []
+      if (tipsList.length > 0) {
+        tipsList.slice(0, 3).forEach((tip) => {
+          const lines = pdf.splitTextToSize(cleanTextForPdf(tip), contentWidth - 15)
+          calculatedCardHeight += (lines.length * 3.8) + 1.8
+        })
+      } else {
+        calculatedCardHeight = 14
+      }
+
+      // 2. Draw card container first (so fill doesn't overwrite text)
       pdf.setFillColor(240, 249, 255) // Soft Blue-50
       pdf.setDrawColor(147, 197, 253) // Blue-300 border
       pdf.setLineWidth(0.35)
-      pdf.roundedRect(margin, roastContentY, contentWidth, 24, 2.5, 2.5, 'FD')
+      pdf.roundedRect(margin, roastContentY, contentWidth, calculatedCardHeight, 2.5, 2.5, 'FD')
 
-      if (data.ai?.tips && data.ai.tips.length > 0) {
-        data.ai.tips.slice(0, 3).forEach((tip, idx) => {
-          const tipRowY = roastContentY + 4.2 + idx * 6.5
+      // 3. Draw bullet items and full wrapped texts
+      let currentTipY = roastContentY + 4.5
+      if (tipsList.length > 0) {
+        tipsList.slice(0, 3).forEach((tip) => {
+          const cleanedTip = cleanTextForPdf(tip)
+          const wrappedTipLines = pdf.splitTextToSize(cleanedTip, contentWidth - 15)
           
-          // Bullet point circle icon
+          // Bullet point circle icon next to first line of text
           pdf.setFillColor(37, 99, 235) // Blue-600
-          pdf.circle(margin + 5, tipRowY + 1.2, 1, 'F')
+          pdf.circle(margin + 5, currentTipY + 1.2, 0.9, 'F')
 
-          // Wrap suggestion
-          pdf.setFont('helvetica', 'normal')
-          pdf.setFontSize(8)
-          pdf.setTextColor(30, 41, 59) // Slate-800
-          const wrappedTipLines = pdf.splitTextToSize(tip, contentWidth - 14)
-          pdf.text(wrappedTipLines[0] || '', margin + 9, tipRowY + 2.1)
+          wrappedTipLines.forEach((line) => {
+            pdf.setFont('helvetica', 'normal')
+            pdf.setFontSize(8)
+            pdf.setTextColor(30, 41, 59) // Slate-800
+            pdf.text(line, margin + 9, currentTipY + 2.1)
+            currentTipY += 3.8
+          })
+          currentTipY += 1.8 // Gap between bullet items
         })
       } else {
         pdf.setFont('helvetica', 'italic')
         pdf.setFontSize(8.5)
         pdf.setTextColor(148, 163, 184)
-        pdf.text('No strengthening tips available at this time.', margin + 6, roastContentY + 12)
+        pdf.text('No strengthening tips available at this time.', margin + 6, roastContentY + 8)
       }
 
       // ============================================
@@ -405,29 +440,34 @@ function App() {
       // Section: AI Journey Summary
       const summaryContentY = addSectionHeader(pdf, 'DEVELOPER EVOLUTION SUMMARY', page2Y)
       
+      const summaryText = cleanTextForPdf(data.ai?.journey_summary || 'Analysis completed successfully.')
+      const summaryLines = pdf.splitTextToSize(summaryText, contentWidth - 10)
+      const summaryCardHeight = Math.max(22, (summaryLines.length * 4.2) + 8)
+
       pdf.setFillColor(248, 250, 252)
       pdf.setDrawColor(226, 232, 240)
       pdf.setLineWidth(0.3)
-      pdf.roundedRect(margin, summaryContentY, contentWidth, 38, 2.5, 2.5, 'FD')
+      pdf.roundedRect(margin, summaryContentY, contentWidth, summaryCardHeight, 2.5, 2.5, 'FD')
 
       pdf.setFont('helvetica', 'normal')
       pdf.setFontSize(8.5)
       pdf.setTextColor(51, 65, 85) // Slate-700
-      const summaryText = data.ai?.journey_summary || 'Analysis completed successfully.'
-      const summaryLines = pdf.splitTextToSize(summaryText, contentWidth - 10)
-      summaryLines.slice(0, 7).forEach((line, idx) => {
+      summaryLines.forEach((line, idx) => {
         pdf.text(line, margin + 5, summaryContentY + 6.5 + idx * 4.2)
       })
 
       // Section: Achievements/Milestones Grid
-      const milestonesY = summaryContentY + 42
+      const milestonesY = summaryContentY + summaryCardHeight + 4
       const milestoneContentY = addSectionHeader(pdf, 'ACHIEVED MILESTONES & BADGES', milestonesY)
 
       const achs = data.achievements || []
       const achColW = (contentWidth - 6) / 3 // 3 columns, ~58mm each
+      const totalAchs = Math.min(achs.length, 9)
+      const rowsCount = Math.ceil(totalAchs / 3)
+      const achGridHeight = rowsCount > 0 ? (rowsCount * 16.5) - 2.5 : 14
       
-      if (achs.length > 0) {
-        achs.slice(0, 6).forEach((badge, idx) => {
+      if (totalAchs > 0) {
+        achs.slice(0, 9).forEach((badge, idx) => {
           const col = idx % 3
           const row = Math.floor(idx / 3)
           const cardX = margin + col * (achColW + 3)
@@ -452,7 +492,7 @@ function App() {
           pdf.setFont('helvetica', 'bold')
           pdf.setFontSize(7.5)
           pdf.setTextColor(15, 23, 42) // Slate-900
-          pdf.text(badge.name, cardX + 8.5, cardY + 4.5)
+          pdf.text(cleanTextForPdf(badge.name), cardX + 8.5, cardY + 4.5)
 
           // Status Badge
           pdf.setFont('helvetica', 'bold')
@@ -464,7 +504,7 @@ function App() {
           pdf.setFont('helvetica', 'normal')
           pdf.setFontSize(6.5)
           pdf.setTextColor(71, 85, 105) // Slate-600
-          const badgeDescLines = pdf.splitTextToSize(badge.description || '', achColW - 7)
+          const badgeDescLines = pdf.splitTextToSize(cleanTextForPdf(badge.description || ''), achColW - 7)
           pdf.text(badgeDescLines[0] || '', cardX + 3.5, cardY + 11.2)
         })
       } else {
@@ -479,16 +519,18 @@ function App() {
       }
 
       // Section: Repository Timeline
-      const timelineY = milestoneContentY + 39
+      const timelineY = milestoneContentY + achGridHeight + 4
       const timelineContentY = addSectionHeader(pdf, 'ANNUAL REPOSITORY EVOLUTION (TIMELINE)', timelineY)
 
+      const timelineCardHeight = 38
       pdf.setFillColor(248, 250, 252)
       pdf.setDrawColor(226, 232, 240)
       pdf.setLineWidth(0.3)
-      pdf.roundedRect(margin, timelineContentY, contentWidth, 38, 2.5, 2.5, 'FD')
+      pdf.roundedRect(margin, timelineContentY, contentWidth, timelineCardHeight, 2.5, 2.5, 'FD')
 
-      if (data.timeline && data.timeline.length > 0) {
-        const topTimeline = data.timeline.slice(-5) // last 5 years
+      const timeData = data.timeline || []
+      if (timeData.length > 0) {
+        const topTimeline = timeData.slice(-5) // last 5 years
         const maxTimelineRepos = Math.max(...topTimeline.map((t) => t.repos), 1)
         const timelineSteps = topTimeline.length
         const totalTimelineHeight = 26
@@ -538,48 +580,53 @@ function App() {
       }
 
       // Section: Top Repositories & Projects
-      const recommendationsY = timelineContentY + 42
+      const recommendationsY = timelineContentY + timelineCardHeight + 4
       const recommendationsContentY = addSectionHeader(pdf, 'TOP REPOSITORIES & PROJECTS', recommendationsY)
+
+      const topRepos = data.repos_summary ? data.repos_summary.slice(0, 3) : []
+      const reposCardHeight = topRepos.length > 0 ? (topRepos.length * 8.8) + 4.6 : 14
 
       pdf.setFillColor(248, 250, 252)
       pdf.setDrawColor(226, 232, 240)
       pdf.setLineWidth(0.3)
-      pdf.roundedRect(margin, recommendationsContentY, contentWidth, 31, 2.5, 2.5, 'FD')
+      pdf.roundedRect(margin, recommendationsContentY, contentWidth, reposCardHeight, 2.5, 2.5, 'FD')
 
-      const topRepos = data.repos ? data.repos.slice(0, 3) : []
       if (topRepos.length > 0) {
         topRepos.forEach((repo, idx) => {
           const repoRowY = recommendationsContentY + 3.2 + idx * 8.8
           
-          // Repo Name
+          // Repo Name (truncated to 40 characters max)
           pdf.setFont('helvetica', 'bold')
           pdf.setFontSize(8.2)
           pdf.setTextColor(37, 99, 235) // Blue-600
-          pdf.text(repo.name, margin + 5, repoRowY + 2)
+          const rawName = repo.name || ''
+          const cleanName = cleanTextForPdf(rawName)
+          const repoName = cleanName.length > 40 ? cleanName.slice(0, 37) + '...' : cleanName
+          pdf.text(repoName, margin + 5, repoRowY + 2)
 
-          // Repo Meta (Language & Stars)
+          // Repo Meta (Language & Stars) - Aligned to the right to prevent overlaps
           const repoMeta = []
-          if (repo.language) repoMeta.push(repo.language)
-          repoMeta.push(`⭐ ${repo.stars || 0}`)
+          if (repo.language) repoMeta.push(cleanTextForPdf(repo.language))
+          repoMeta.push(`${repo.stars || 0} stars`)
           
           pdf.setFont('helvetica', 'bold')
           pdf.setFontSize(7.5)
           pdf.setTextColor(100, 116, 139) // Slate-500
-          pdf.text(repoMeta.join('  •  '), margin + 52, repoRowY + 2)
+          pdf.text(repoMeta.join('  |  '), pageWidth - margin - 5, repoRowY + 2, { align: 'right' })
 
-          // Description
+          // Description (Increased width to contentWidth - 10 to display more text)
           pdf.setFont('helvetica', 'normal')
           pdf.setFontSize(7.5)
           pdf.setTextColor(71, 85, 105) // Slate-600
-          const descText = repo.description || 'No repository description provided.'
-          const descLines = pdf.splitTextToSize(descText, 115)
+          const descText = cleanTextForPdf(repo.description || 'No repository description provided.')
+          const descLines = pdf.splitTextToSize(descText, contentWidth - 10)
           pdf.text(descLines[0] || '', margin + 5, repoRowY + 5.2)
         })
       } else {
         pdf.setFont('helvetica', 'italic')
         pdf.setFontSize(8.5)
         pdf.setTextColor(148, 163, 184)
-        pdf.text('No repository data available at this time.', margin + 6, recommendationsContentY + 12)
+        pdf.text('No repository data available at this time.', margin + 6, recommendationsContentY + 8)
       }
 
       pdf.save(`gitjourney-report-${data.profile.username}.pdf`)
@@ -704,7 +751,6 @@ function App() {
             {error && (
               <div style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
                 <div className="error-box">
-                  <div className="error-box-icon">😵</div>
                   <div className="error-box-text">{error}</div>
                   <button className="error-box-btn" onClick={() => setError(null)}>
                     Dismiss
@@ -789,7 +835,7 @@ function App() {
                     onClick={exportToPdf}
                     disabled={exportingPdf}
                   >
-                    {exportingPdf ? '⏳ Generating...' : '📄 Export PDF'}
+                    {exportingPdf ? 'Generating...' : 'Export PDF'}
                   </button>
                 </div>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -850,7 +896,6 @@ function App() {
                     transition={{ duration: 0.5, delay: 0.7 }}
                   >
                     <div className="card-header">
-                      <span className="card-header-icon">📖</span>
                       <div>
                         <div className="card-header-title">Journey Summary</div>
                         <div className="card-header-subtitle">AI-generated narrative of your coding evolution</div>
@@ -942,7 +987,7 @@ function App() {
       </AnimatePresence>
       {installPrompt && (
         <button className="pwa-install-btn" onClick={handleInstallClick}>
-          📲 Install App
+          Install App
         </button>
       )}
     </div>

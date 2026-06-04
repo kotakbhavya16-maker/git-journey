@@ -96,7 +96,7 @@ export default function HeroSearch({ onSearch, onBattleSearch, loading }) {
                   title="GitHub API Settings"
                   aria-label="GitHub API Settings"
                 >
-                  ⚙️
+                  ⚙
                 </button>
                 <span className="hero-search-prefix">github.com/</span>
                 <input
@@ -132,7 +132,7 @@ export default function HeroSearch({ onSearch, onBattleSearch, loading }) {
                   aria-label="GitHub API Settings"
                   style={{ padding: '0 0.5rem 0 0' }}
                 >
-                  ⚙️
+                  ⚙
                 </button>
                 <div className="hero-battle-inputs">
                   <input
@@ -167,7 +167,7 @@ export default function HeroSearch({ onSearch, onBattleSearch, loading }) {
                   type="submit"
                   disabled={loading || !username1.trim() || !username2.trim()}
                 >
-                  {loading ? 'Comparing...' : 'Battle! ⚔️'}
+                  {loading ? 'Comparing...' : 'Battle!'}
                 </button>
               </div>
             </form>
@@ -217,7 +217,7 @@ export default function HeroSearch({ onSearch, onBattleSearch, loading }) {
               </button>
               
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                ⚙️ GitHub API Settings
+                GitHub API Settings
               </h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
                 Configure your own Personal Access Token (PAT) to increase your rate limit to 5,000 requests/hour and securely analyze your private repositories.

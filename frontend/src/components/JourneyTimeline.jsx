@@ -13,7 +13,6 @@ export default function JourneyTimeline({ timeline }) {
       transition={{ duration: 0.5, delay: 0.2 }}
     >
       <div className="card-header">
-        <span className="card-header-icon">🎬</span>
         <div>
           <div className="card-header-title">Coding Journey</div>
           <div className="card-header-subtitle">Repositories created per year</div>
