@@ -94,19 +94,33 @@ function App() {
 
       // Setup running header & footer helper
       const addHeaderAndFooter = (pdfInstance, pageNum, totalPages) => {
-        // Header
-        pdfInstance.setFont('helvetica', 'normal')
+        // Dark slate top bar accent
+        pdfInstance.setFillColor(15, 23, 42) // Slate-900
+        pdfInstance.rect(0, 0, pageWidth, 5, 'F')
+        
+        // Royal Blue top secondary accent
+        pdfInstance.setFillColor(37, 99, 235) // Blue-600
+        pdfInstance.rect(0, 5, pageWidth, 1.5, 'F')
+
+        // Header Text
+        pdfInstance.setFont('helvetica', 'bold')
         pdfInstance.setFontSize(8)
-        pdfInstance.setTextColor(148, 163, 184) // Slate-400
-        pdfInstance.text('GITJOURNEY DEVELOPER REPORT', margin, 12)
-        pdfInstance.text('gitjourney.dev', pageWidth - margin, 12, { align: 'right' })
+        pdfInstance.setTextColor(100, 116, 139) // Slate-500
+        pdfInstance.text('GITJOURNEY DEVELOPER INSIGHTS', margin, 12)
+        pdfInstance.text(`REPORT ID: #${data.profile.username.toUpperCase()}`, pageWidth - margin, 12, { align: 'right' })
         
         pdfInstance.setDrawColor(226, 232, 240) // Slate-200
-        pdfInstance.setLineWidth(0.2)
+        pdfInstance.setLineWidth(0.25)
         pdfInstance.line(margin, 14, pageWidth - margin, 14)
 
         // Footer
+        pdfInstance.setDrawColor(226, 232, 240) // Slate-200
+        pdfInstance.setLineWidth(0.25)
         pdfInstance.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12)
+        
+        pdfInstance.setFont('helvetica', 'normal')
+        pdfInstance.setFontSize(8)
+        pdfInstance.setTextColor(148, 163, 184) // Slate-400
         pdfInstance.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2, pageHeight - 8, { align: 'center' })
         
         const timestamp = new Date().toLocaleDateString('en-US', {
@@ -115,27 +129,20 @@ function App() {
         pdfInstance.text(`Generated: ${timestamp}`, pageWidth - margin, pageHeight - 8, { align: 'right' })
       }
 
-      // Helper to draw clean section header
+      // Helper to draw clean section header with modern vertical left accent bar
       const addSectionHeader = (pdfInstance, title, y) => {
+        pdfInstance.setFillColor(37, 99, 235) // Blue-600
+        pdfInstance.rect(margin, y, 1.5, 5, 'F')
+
         pdfInstance.setFont('helvetica', 'bold')
-        pdfInstance.setFontSize(11)
-        pdfInstance.setTextColor(37, 99, 235) // Blue-600
-        pdfInstance.text(title, margin, y)
+        pdfInstance.setFontSize(10)
+        pdfInstance.setTextColor(15, 23, 42) // Slate-900
+        pdfInstance.text(title, margin + 4, y + 3.8)
         
         pdfInstance.setDrawColor(226, 232, 240) // Slate-200
-        pdfInstance.setLineWidth(0.4)
-        pdfInstance.line(margin, y + 2, pageWidth - margin, y + 2)
-        return y + 7
-      }
-
-      // Helper to wrap and print text paragraphs
-      const drawTextWrapped = (pdfInstance, text, x, y, width, lineHeight) => {
-        const lines = pdfInstance.splitTextToSize(text || '', width)
-        lines.forEach((line) => {
-          pdfInstance.text(line, x, y)
-          y += lineHeight
-        })
-        return y
+        pdfInstance.setLineWidth(0.25)
+        pdfInstance.line(margin, y + 6.5, pageWidth - margin, y + 6.5)
+        return y + 9
       }
 
       // ============================================
@@ -143,127 +150,241 @@ function App() {
       // ============================================
       addHeaderAndFooter(pdf, 1, 2)
 
-      // Name & Title
+      // Draw Profile Monogram/Avatar Circle
+      pdf.setFillColor(37, 99, 235) // Blue-600
+      pdf.circle(margin + 10, 23 + 10, 10, 'F')
+
+      const monogramLetter = (data.profile.name || data.profile.username || 'G').charAt(0).toUpperCase()
+      pdf.setTextColor(255, 255, 255)
       pdf.setFont('helvetica', 'bold')
-      pdf.setFontSize(20)
+      pdf.setFontSize(22)
+      pdf.text(monogramLetter, margin + 10, 23 + 16.5, { align: 'center' })
+
+      // Name & Handle
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(16)
       pdf.setTextColor(15, 23, 42) // Slate-900
-      pdf.text(data.profile.name || data.profile.username, margin, 24)
+      pdf.text(data.profile.name || data.profile.username, margin + 25, 27)
 
       pdf.setFont('helvetica', 'bold')
-      pdf.setFontSize(11)
+      pdf.setFontSize(9.5)
       pdf.setTextColor(37, 99, 235) // Blue-600
-      pdf.text(`@${data.profile.username}`, margin, 30)
+      pdf.text(`@${data.profile.username}`, margin + 25, 31.5)
 
       // Location, Company, Joined
-      pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(9)
-      pdf.setTextColor(71, 85, 105) // Slate-600
-      
       const metaItems = []
-      if (data.profile.location && data.profile.location !== 'Unknown') metaItems.push(`📍 ${data.profile.location}`)
-      if (data.profile.company) metaItems.push(`🏢 ${data.profile.company}`)
+      if (data.profile.location && data.profile.location !== 'Unknown') metaItems.push(`Location: ${data.profile.location}`)
+      if (data.profile.company) metaItems.push(`Company: ${data.profile.company}`)
       
       const joinDate = data.profile.created_at
         ? new Date(data.profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
         : 'Unknown'
-      metaItems.push(`📅 Joined ${joinDate}`)
-      pdf.text(metaItems.join('   |   '), margin, 36)
+      metaItems.push(`Joined: ${joinDate}`)
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(8)
+      pdf.setTextColor(100, 116, 139) // Slate-500
+      pdf.text(metaItems.join('   |   '), margin + 25, 36.5)
 
       // Bio Paragraph
-      pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'italic')
+      pdf.setFontSize(8.5)
       pdf.setTextColor(71, 85, 105) // Slate-600
-      let currentY = drawTextWrapped(pdf, data.profile.bio, margin, 44, contentWidth, 5)
+      const bioText = data.profile.bio || 'No developer biography provided.'
+      const bioLines = pdf.splitTextToSize(bioText, contentWidth)
+      let bioEndY = 44
+      bioLines.slice(0, 3).forEach((line, idx) => {
+        pdf.text(line, margin, 44 + idx * 4)
+        bioEndY = 44 + (idx + 1) * 4
+      })
 
-      // Stats Table Box
-      currentY = Math.max(currentY + 3, 58)
-      pdf.setFillColor(248, 250, 252) // Slate-50 background
-      pdf.rect(margin, currentY, contentWidth, 18, 'F')
-      pdf.setDrawColor(226, 232, 240) // Slate-200 border
-      pdf.setLineWidth(0.3)
-      pdf.rect(margin, currentY, contentWidth, 18, 'S')
-
-      // Render columns in table
-      const cols = [
+      // KPI Stats Cards (Row of 5 Rounded Rects)
+      const statsY = Math.max(bioEndY + 4, 52)
+      const cardW = (contentWidth - 8) / 5 // approx 34.4mm wide
+      const stats = [
         { label: 'REPOSITORIES', val: data.stats.total_repos },
         { label: 'TOTAL STARS', val: data.stats.total_stars },
         { label: 'FOLLOWERS', val: data.profile.followers },
         { label: 'LANGUAGES', val: data.stats.total_languages },
-        { label: 'ON GITHUB', val: `${data.stats.account_age_years} Years` }
+        { label: 'ON GITHUB', val: `${data.stats.account_age_years} Yrs` }
       ]
-      const colWidth = contentWidth / cols.length // 36mm
-      cols.forEach((col, idx) => {
-        const xCenter = margin + (idx * colWidth) + (colWidth / 2)
-        
+
+      stats.forEach((item, idx) => {
+        const cardX = margin + idx * (cardW + 2)
+        // Background card fill
+        pdf.setFillColor(248, 250, 252) // Slate-50
+        pdf.setDrawColor(226, 232, 240) // Slate-200
+        pdf.setLineWidth(0.3)
+        pdf.roundedRect(cardX, statsY, cardW, 19, 2, 2, 'FD')
+
+        // Value
         pdf.setFont('helvetica', 'bold')
-        pdf.setFontSize(13)
+        pdf.setFontSize(11.5)
         pdf.setTextColor(37, 99, 235) // Blue-600
-        pdf.text(String(col.val), xCenter, currentY + 7, { align: 'center' })
+        pdf.text(String(item.val), cardX + cardW / 2, statsY + 8.5, { align: 'center' })
 
+        // Label
         pdf.setFont('helvetica', 'bold')
-        pdf.setFontSize(7.5)
+        pdf.setFontSize(6.5)
         pdf.setTextColor(100, 116, 139) // Slate-500
-        pdf.text(col.label, xCenter, currentY + 13, { align: 'center' })
-
-        // Vertical divider line
-        if (idx < cols.length - 1) {
-          const dividerX = margin + ((idx + 1) * colWidth)
-          pdf.line(dividerX, currentY + 2, dividerX, currentY + 16)
-        }
+        pdf.text(item.label, cardX + cardW / 2, statsY + 14.5, { align: 'center' })
       })
 
-      // Developer Personality Section
-      currentY = addSectionHeader(pdf, 'DEVELOPER PERSONALITY ANALYSIS', currentY + 26)
+      // Developer DNA Section
+      const dnaY = statsY + 23
+      const dnaContentY = addSectionHeader(pdf, 'COGNITIVE DNA & PERSONALITY', dnaY)
       
-      pdf.setFont('helvetica', 'bold')
-      pdf.setFontSize(11)
-      pdf.setTextColor(15, 23, 42) // Slate-900
-      const personalityTitle = `${data.ai?.personality?.emoji || '🧬'} ${data.ai?.personality?.type_name || 'Generic Developer'}`
-      pdf.text(personalityTitle, margin, currentY)
-      currentY += 5.5
+      // Left Column Card: Personality Type Details
+      const leftColW = 78
+      pdf.setFillColor(248, 250, 252)
+      pdf.setDrawColor(226, 232, 240)
+      pdf.setLineWidth(0.3)
+      pdf.roundedRect(margin, dnaContentY, leftColW, 52, 2.5, 2.5, 'FD')
 
+      // Large Title
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(10.5)
+      pdf.setTextColor(37, 99, 235) // Blue-600
+      const personalityTitle = data.ai?.personality?.type_name || 'Core Developer'
+      pdf.text(personalityTitle, margin + leftColW / 2, dnaContentY + 10, { align: 'center' })
+
+      pdf.setDrawColor(241, 245, 249)
+      pdf.line(margin + 6, dnaContentY + 14, margin + leftColW - 6, dnaContentY + 14)
+
+      // Description
       pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(9.5)
+      pdf.setFontSize(8)
       pdf.setTextColor(71, 85, 105) // Slate-600
-      currentY = drawTextWrapped(pdf, data.ai?.personality?.description, margin, currentY, contentWidth, 4.8)
+      const personalityDesc = data.ai?.personality?.description || 'A developer who thrives on solving tough engineering challenges.'
+      const descLines = pdf.splitTextToSize(personalityDesc, leftColW - 10)
+      descLines.slice(0, 7).forEach((line, idx) => {
+        pdf.text(line, margin + 5, dnaContentY + 20 + idx * 4)
+      })
+
+      // Right Column Card: Behavioral traits
+      const rightColX = margin + leftColW + 4 // 15 + 78 + 4 = 97
+      const rightColW = contentWidth - leftColW - 4 // 98mm
+      pdf.setFillColor(248, 250, 252)
+      pdf.setDrawColor(226, 232, 240)
+      pdf.setLineWidth(0.3)
+      pdf.roundedRect(rightColX, dnaContentY, rightColW, 52, 2.5, 2.5, 'FD')
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(8.5)
+      pdf.setTextColor(100, 116, 139) // Slate-500
+      pdf.text('BEHAVIORAL DIMENSIONS', rightColX + 5, dnaContentY + 6.5)
+
+      if (data.ai?.personality?.traits && data.ai.personality.traits.length > 0) {
+        data.ai.personality.traits.slice(0, 3).forEach((trait, i) => {
+          const traitY = dnaContentY + 11.5 + i * 13
+          
+          // Trait Name & Score
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(7.5)
+          pdf.setTextColor(15, 23, 42) // Slate-900
+          pdf.text(trait.name, rightColX + 5, traitY + 2)
+
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(7.5)
+          pdf.setTextColor(37, 99, 235) // Blue-600
+          pdf.text(`${trait.score}/100`, rightColX + rightColW - 5, traitY + 2, { align: 'right' })
+
+          // Progress Track
+          pdf.setFillColor(226, 232, 240)
+          pdf.rect(rightColX + 5, traitY + 3.5, rightColW - 10, 2, 'F')
+
+          // Progress Fill
+          pdf.setFillColor(37, 99, 235)
+          const fillW = (trait.score / 100) * (rightColW - 10)
+          pdf.rect(rightColX + 5, traitY + 3.5, fillW, 2, 'F')
+
+          // Label
+          pdf.setFont('helvetica', 'normal')
+          pdf.setFontSize(7)
+          pdf.setTextColor(100, 116, 139)
+          pdf.text(trait.label, rightColX + 5, traitY + 8)
+        })
+      }
 
       // Primary Languages Section
-      currentY = addSectionHeader(pdf, 'PRIMARY WEAPONS (LANGUAGES)', currentY + 8)
+      const langY = dnaContentY + 56
+      const langContentY = addSectionHeader(pdf, 'CORE TECHNOLOGY STACK', langY)
+
+      pdf.setFillColor(248, 250, 252)
+      pdf.setDrawColor(226, 232, 240)
+      pdf.setLineWidth(0.3)
+      pdf.roundedRect(margin, langContentY, contentWidth, 38, 2.5, 2.5, 'FD')
 
       if (data.languages && data.languages.length > 0) {
         const topLangs = data.languages.slice(0, 5)
+        const barColors = [
+          [37, 99, 235],   // Blue-600
+          [99, 102, 241],  // Indigo-500
+          [13, 148, 136],  // Teal-500
+          [168, 85, 247],  // Purple-500
+          [245, 158, 11]   // Amber-500
+        ]
+        
         topLangs.forEach((lang, idx) => {
-          const rowY = currentY + (idx * 7.5)
+          const rowY = langContentY + 4 + (idx * 6.2)
           
           pdf.setFont('helvetica', 'bold')
-          pdf.setFontSize(9.5)
+          pdf.setFontSize(8.2)
           pdf.setTextColor(15, 23, 42) // Slate-900
-          pdf.text(lang.name, margin, rowY + 3.5)
-
-          // Draw progress bar
-          const barWidth = 90
-          const barHeight = 3.5
-          const fillWidth = (lang.percentage / 100) * barWidth
-          const barX = margin + 50
-
-          pdf.setFillColor(241, 245, 249) // Slate-100 track
-          pdf.rect(barX, rowY + 0.5, barWidth, barHeight, 'F')
-          
-          pdf.setFillColor(37, 99, 235) // Blue-600 fill
-          pdf.rect(barX, rowY + 0.5, fillWidth, barHeight, 'F')
+          pdf.text(lang.name, margin + 5, rowY + 2.5)
 
           // Percentage Label
           pdf.setFont('helvetica', 'bold')
-          pdf.setFontSize(9)
+          pdf.setFontSize(8.2)
           pdf.setTextColor(71, 85, 105) // Slate-600
-          pdf.text(`${lang.percentage}%`, barX + barWidth + 6, rowY + 3.5)
+          pdf.text(`${lang.percentage}%`, margin + contentWidth - 5, rowY + 2.5, { align: 'right' })
+
+          // Draw progress bar
+          const barWidth = 110
+          const barHeight = 1.8
+          const fillWidth = (lang.percentage / 100) * barWidth
+          const barX = margin + 40
+
+          pdf.setFillColor(226, 232, 240) // Slate-200 track
+          pdf.rect(barX, rowY + 1.2, barWidth, barHeight, 'F')
+          
+          // Custom color coded fill
+          const color = barColors[idx % barColors.length]
+          pdf.setFillColor(color[0], color[1], color[2])
+          pdf.rect(barX, rowY + 1.2, fillWidth, barHeight, 'F')
         })
       } else {
         pdf.setFont('helvetica', 'normal')
-        pdf.setFontSize(10)
+        pdf.setFontSize(9)
         pdf.setTextColor(148, 163, 184)
-        pdf.text('No language statistics available.', margin, currentY)
+        pdf.text('No language statistics available.', margin + 5, langContentY + 18)
       }
+
+      // Community Habits & Roast Section (Parchment Tint)
+      const roastY = langContentY + 42
+      const roastContentY = addSectionHeader(pdf, 'COMMUNITY HABITS & AI ROAST', roastY)
+
+      pdf.setFillColor(254, 252, 243) // Warm light tint
+      pdf.setDrawColor(245, 158, 11) // Amber-500 border
+      pdf.setLineWidth(0.35)
+      pdf.roundedRect(margin, roastContentY, contentWidth, 24, 2.5, 2.5, 'FD')
+
+      // Vibe Title
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(8.5)
+      pdf.setTextColor(180, 83, 9) // Amber-700
+      const roastVibe = data.ai?.roast?.overall_vibe || 'Intriguing Developer'
+      pdf.text(`Vibe Check: ${roastVibe}`, margin + 5, roastContentY + 5.5)
+
+      // Roast content
+      pdf.setFont('helvetica', 'italic')
+      pdf.setFontSize(7.8)
+      pdf.setTextColor(120, 53, 4) // Amber-800
+      const roastText = data.ai?.roast?.lines ? data.ai.roast.lines.slice(0, 2).join('   //   ') : 'No observations compiled.'
+      const roastLines = pdf.splitTextToSize(roastText, contentWidth - 10)
+      roastLines.slice(0, 2).forEach((line, idx) => {
+        pdf.text(line, margin + 5, roastContentY + 11.5 + idx * 4)
+      })
 
       // ============================================
       // PAGE 2
@@ -271,66 +392,172 @@ function App() {
       pdf.addPage()
       addHeaderAndFooter(pdf, 2, 2)
       
-      currentY = 22
+      let page2Y = 22
 
-      // AI Journey Summary
-      currentY = addSectionHeader(pdf, 'AI-GENERATED EVOLUTION SUMMARY', currentY)
+      // Section: AI Journey Summary
+      const summaryContentY = addSectionHeader(pdf, 'DEVELOPER EVOLUTION SUMMARY', page2Y)
       
-      pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(9.5)
-      pdf.setTextColor(71, 85, 105) // Slate-600
-      currentY = drawTextWrapped(pdf, data.ai?.journey_summary, margin, currentY, contentWidth, 4.8)
-
-      // Growth Recommendations
-      currentY = addSectionHeader(pdf, 'PROFESSIONAL GROWTH RECOMMENDATIONS', currentY + 8)
+      pdf.setFillColor(248, 250, 252)
+      pdf.setDrawColor(226, 232, 240)
+      pdf.setLineWidth(0.3)
+      pdf.roundedRect(margin, summaryContentY, contentWidth, 38, 2.5, 2.5, 'FD')
 
       pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(9.5)
-      pdf.setTextColor(71, 85, 105) // Slate-600
-      if (data.ai?.tips && data.ai.tips.length > 0) {
-        data.ai.tips.forEach((tip) => {
-          pdf.text('•', margin, currentY)
-          currentY = drawTextWrapped(pdf, tip, margin + 4, currentY, contentWidth - 4, 4.8)
-          currentY += 1.5 // small gap between bullet items
+      pdf.setFontSize(8.5)
+      pdf.setTextColor(51, 65, 85) // Slate-700
+      const summaryText = data.ai?.journey_summary || 'Analysis completed successfully.'
+      const summaryLines = pdf.splitTextToSize(summaryText, contentWidth - 10)
+      summaryLines.slice(0, 7).forEach((line, idx) => {
+        pdf.text(line, margin + 5, summaryContentY + 6.5 + idx * 4.2)
+      })
+
+      // Section: Achievements/Milestones Grid
+      const milestonesY = summaryContentY + 42
+      const milestoneContentY = addSectionHeader(pdf, 'ACHIEVED MILESTONES & BADGES', milestonesY)
+
+      const achs = data.achievements || []
+      const achColW = (contentWidth - 6) / 3 // 3 columns, ~58mm each
+      
+      if (achs.length > 0) {
+        achs.slice(0, 6).forEach((badge, idx) => {
+          const col = idx % 3
+          const row = Math.floor(idx / 3)
+          const cardX = margin + col * (achColW + 3)
+          const cardY = milestoneContentY + row * 16.5
+
+          // Color based on status
+          if (badge.unlocked) {
+            pdf.setFillColor(240, 253, 250) // Emerald-50
+            pdf.setDrawColor(153, 246, 228) // Teal-200
+          } else {
+            pdf.setFillColor(248, 250, 252) // Slate-50
+            pdf.setDrawColor(226, 232, 240) // Slate-200
+          }
+          pdf.setLineWidth(0.3)
+          pdf.roundedRect(cardX, cardY, achColW, 14, 2, 2, 'FD')
+
+          // Draw small color token instead of raw unicode emoji which might fail to render
+          pdf.setFillColor(badge.unlocked ? 13 : 148, badge.unlocked ? 148 : 163, badge.unlocked ? 136 : 184)
+          pdf.circle(cardX + 4.5, cardY + 5, 1.8, 'F')
+
+          // Title
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(7.5)
+          pdf.setTextColor(15, 23, 42) // Slate-900
+          pdf.text(badge.name, cardX + 8.5, cardY + 4.5)
+
+          // Status Badge
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(5.8)
+          pdf.setTextColor(badge.unlocked ? 13 : 100, badge.unlocked ? 148 : 116, badge.unlocked ? 136 : 139)
+          pdf.text(badge.unlocked ? 'UNLOCKED' : 'LOCKED', cardX + 8.5, cardY + 7.5)
+
+          // Description
+          pdf.setFont('helvetica', 'normal')
+          pdf.setFontSize(6.5)
+          pdf.setTextColor(71, 85, 105) // Slate-600
+          const badgeDescLines = pdf.splitTextToSize(badge.description || '', achColW - 7)
+          pdf.text(badgeDescLines[0] || '', cardX + 3.5, cardY + 11.2)
         })
       } else {
-        pdf.text('No growth recommendations generated.', margin, currentY)
-        currentY += 6
+        pdf.setFillColor(248, 250, 252)
+        pdf.setDrawColor(226, 232, 240)
+        pdf.roundedRect(margin, milestoneContentY, contentWidth, 14, 2.5, 2.5, 'FD')
+        
+        pdf.setFont('helvetica', 'italic')
+        pdf.setFontSize(8.5)
+        pdf.setTextColor(148, 163, 184)
+        pdf.text('No milestones currently unlocked.', margin + 6, milestoneContentY + 8)
       }
 
-      // Coding Journey Timeline
-      currentY = addSectionHeader(pdf, 'ANNUAL REPOSITORY EVOLUTION (TIMELINE)', currentY + 6)
+      // Section: Repository Timeline
+      const timelineY = milestoneContentY + 39
+      const timelineContentY = addSectionHeader(pdf, 'ANNUAL REPOSITORY EVOLUTION (TIMELINE)', timelineY)
+
+      pdf.setFillColor(248, 250, 252)
+      pdf.setDrawColor(226, 232, 240)
+      pdf.setLineWidth(0.3)
+      pdf.roundedRect(margin, timelineContentY, contentWidth, 38, 2.5, 2.5, 'FD')
 
       if (data.timeline && data.timeline.length > 0) {
-        const maxRepos = Math.max(...data.timeline.map((t) => t.repos), 1)
-        data.timeline.forEach((item, idx) => {
-          const rowY = currentY + (idx * 7)
+        const topTimeline = data.timeline.slice(-5) // last 5 years
+        const maxTimelineRepos = Math.max(...topTimeline.map((t) => t.repos), 1)
+        const timelineSteps = topTimeline.length
+        const totalTimelineHeight = 26
+        const stepH = totalTimelineHeight / Math.max(timelineSteps - 1, 1)
+
+        // Draw vertical center track line
+        pdf.setDrawColor(226, 232, 240)
+        pdf.setLineWidth(0.8)
+        pdf.line(margin + 22, timelineContentY + 6, margin + 22, timelineContentY + 6 + (timelineSteps - 1) * stepH)
+
+        topTimeline.forEach((item, idx) => {
+          const rowY = timelineContentY + 6 + (idx * stepH)
           
+          // Year text label
           pdf.setFont('helvetica', 'bold')
-          pdf.setFontSize(9.5)
+          pdf.setFontSize(8.2)
           pdf.setTextColor(15, 23, 42) // Slate-900
-          pdf.text(String(item.year), margin, rowY + 3.5)
+          pdf.text(String(item.year), margin + 6, rowY + 1.2)
 
-          // Repos label
-          pdf.setFont('helvetica', 'normal')
-          pdf.setFontSize(8.5)
-          pdf.setTextColor(100, 116, 139) // Slate-500
-          pdf.text(`${item.repos} repos`, margin + 18, rowY + 3.5)
-
-          // Draw progress bar
-          const barWidth = 90
-          const barHeight = 2.5
-          const fillWidth = (item.repos / maxRepos) * barWidth
-          const barX = margin + 45
-
-          pdf.setFillColor(241, 245, 249) // Slate-100
-          pdf.rect(barX, rowY + 1.2, barWidth, barHeight, 'F')
-          
+          // Node Circle
           pdf.setFillColor(37, 99, 235) // Blue-600
-          pdf.rect(barX, rowY + 1.2, fillWidth, barHeight, 'F')
+          pdf.circle(margin + 22, rowY, 1.8, 'F')
+
+          // Quantity text label
+          pdf.setFont('helvetica', 'normal')
+          pdf.setFontSize(7.5)
+          pdf.setTextColor(100, 116, 139) // Slate-500
+          pdf.text(`${item.repos} repos`, margin + 27, rowY + 1)
+
+          // Progress bar track
+          const barWidth = 100
+          const barHeight = 1.8
+          const fillWidth = (item.repos / maxTimelineRepos) * barWidth
+          const barX = margin + 46
+
+          pdf.setFillColor(241, 245, 249) // Slate-100 track
+          pdf.rect(barX, rowY - 1, barWidth, barHeight, 'F')
+          
+          pdf.setFillColor(37, 99, 235) // Blue-600 fill
+          pdf.rect(barX, rowY - 1, fillWidth, barHeight, 'F')
         })
       } else {
-        pdf.text('No annual coding timeline available.', margin, currentY)
+        pdf.setFont('helvetica', 'italic')
+        pdf.setFontSize(8.5)
+        pdf.setTextColor(148, 163, 184)
+        pdf.text('No annual coding timeline records found.', margin + 6, timelineContentY + 12)
+      }
+
+      // Section: Career recommendations
+      const recommendationsY = timelineContentY + 42
+      const recommendationsContentY = addSectionHeader(pdf, 'ACTIONABLE CAREER & GROWTH RECOMMENDATIONS', recommendationsY)
+
+      pdf.setFillColor(248, 250, 252)
+      pdf.setDrawColor(226, 232, 240)
+      pdf.setLineWidth(0.3)
+      pdf.roundedRect(margin, recommendationsContentY, contentWidth, 31, 2.5, 2.5, 'FD')
+
+      if (data.ai?.tips && data.ai.tips.length > 0) {
+        data.ai.tips.slice(0, 3).forEach((tip, idx) => {
+          const tipRowY = recommendationsContentY + 4.5 + idx * 8
+          
+          // Bullet point circle icon
+          pdf.setFillColor(37, 99, 235) // Blue-600
+          pdf.circle(margin + 5, tipRowY + 1, 1, 'F')
+
+          // Wrap recommendation
+          pdf.setFont('helvetica', 'normal')
+          pdf.setFontSize(8)
+          pdf.setTextColor(71, 85, 105) // Slate-600
+          const wrappedTipLines = pdf.splitTextToSize(tip, contentWidth - 14)
+          pdf.text(wrappedTipLines[0] || '', margin + 9, tipRowY + 2)
+        })
+      } else {
+        pdf.setFont('helvetica', 'italic')
+        pdf.setFontSize(8.5)
+        pdf.setTextColor(148, 163, 184)
+        pdf.text('No recommendations available at this time.', margin + 6, recommendationsContentY + 10)
       }
 
       pdf.save(`gitjourney-report-${data.profile.username}.pdf`)
