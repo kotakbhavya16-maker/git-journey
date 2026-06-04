@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const EXAMPLE_USERS = ['torvalds', 'gaearon', 'sindresorhus', 'yyx990803']
 
-export default function HeroSearch({ onSearch, loading }) {
+export default function HeroSearch({ onSearch, onBattleSearch, loading }) {
+  const [activeTab, setActiveTab] = useState('single') // 'single' | 'compare'
   const [username, setUsername] = useState('')
+  const [username1, setUsername1] = useState('')
+  const [username2, setUsername2] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [token, setToken] = useState(localStorage.getItem('gitjourney_token') || '')
 
@@ -12,6 +15,13 @@ export default function HeroSearch({ onSearch, loading }) {
     e.preventDefault()
     if (username.trim()) {
       onSearch(username.trim())
+    }
+  }
+
+  const handleBattleSubmit = (e) => {
+    e.preventDefault()
+    if (username1.trim() && username2.trim()) {
+      onBattleSearch(username1.trim(), username2.trim())
     }
   }
 
@@ -56,56 +66,130 @@ export default function HeroSearch({ onSearch, loading }) {
             and a shareable developer card.
           </p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="hero-search-box">
-              <button
-                type="button"
-                className="hero-search-settings-btn"
-                onClick={() => setShowModal(true)}
-                title="GitHub API Settings"
-                aria-label="GitHub API Settings"
-              >
-                ⚙️
-              </button>
-              <span className="hero-search-prefix">github.com/</span>
-              <input
-                id="github-username-input"
-                className="hero-search-input"
-                type="text"
-                placeholder="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={loading}
-                autoComplete="off"
-                spellCheck="false"
-                maxLength={39}
-              />
-              <button
-                id="analyze-btn"
-                className="hero-search-btn"
-                type="submit"
-                disabled={loading || !username.trim()}
-              >
-                {loading ? 'Analyzing...' : 'Explore →'}
-              </button>
-            </div>
-          </form>
-
-          <div className="hero-examples">
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '0.25rem' }}>
-              Try:
-            </span>
-            {EXAMPLE_USERS.map((name) => (
-              <button
-                key={name}
-                className="hero-example-chip"
-                onClick={() => handleExample(name)}
-                disabled={loading}
-              >
-                {name}
-              </button>
-            ))}
+          {/* Mode Tab Switcher */}
+          <div className="hero-tabs">
+            <button
+              type="button"
+              className={`hero-tab-btn ${activeTab === 'single' ? 'active' : ''}`}
+              onClick={() => setActiveTab('single')}
+              disabled={loading}
+            >
+              🔍 Explore Profile
+            </button>
+            <button
+              type="button"
+              className={`hero-tab-btn ${activeTab === 'compare' ? 'active' : ''}`}
+              onClick={() => setActiveTab('compare')}
+              disabled={loading}
+            >
+              ⚔️ Compare Profiles
+            </button>
           </div>
+
+          {activeTab === 'single' ? (
+            <form onSubmit={handleSubmit}>
+              <div className="hero-search-box">
+                <button
+                  type="button"
+                  className="hero-search-settings-btn"
+                  onClick={() => setShowModal(true)}
+                  title="GitHub API Settings"
+                  aria-label="GitHub API Settings"
+                >
+                  ⚙️
+                </button>
+                <span className="hero-search-prefix">github.com/</span>
+                <input
+                  id="github-username-input"
+                  className="hero-search-input"
+                  type="text"
+                  placeholder="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={loading}
+                  autoComplete="off"
+                  spellCheck="false"
+                  maxLength={39}
+                />
+                <button
+                  id="analyze-btn"
+                  className="hero-search-btn"
+                  type="submit"
+                  disabled={loading || !username.trim()}
+                >
+                  {loading ? 'Analyzing...' : 'Explore →'}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleBattleSubmit}>
+              <div className="hero-battle-box">
+                <button
+                  type="button"
+                  className="hero-search-settings-btn"
+                  onClick={() => setShowModal(true)}
+                  title="GitHub API Settings"
+                  aria-label="GitHub API Settings"
+                  style={{ padding: '0 0.5rem 0 0' }}
+                >
+                  ⚙️
+                </button>
+                <div className="hero-battle-inputs">
+                  <input
+                    id="battle-username-1"
+                    className="hero-battle-input"
+                    type="text"
+                    placeholder="first username"
+                    value={username1}
+                    onChange={(e) => setUsername1(e.target.value)}
+                    disabled={loading}
+                    autoComplete="off"
+                    spellCheck="false"
+                    maxLength={39}
+                  />
+                  <span className="hero-battle-vs">VS</span>
+                  <input
+                    id="battle-username-2"
+                    className="hero-battle-input"
+                    type="text"
+                    placeholder="second username"
+                    value={username2}
+                    onChange={(e) => setUsername2(e.target.value)}
+                    disabled={loading}
+                    autoComplete="off"
+                    spellCheck="false"
+                    maxLength={39}
+                  />
+                </div>
+                <button
+                  id="battle-btn"
+                  className="hero-battle-btn"
+                  type="submit"
+                  disabled={loading || !username1.trim() || !username2.trim()}
+                >
+                  {loading ? 'Comparing...' : 'Battle! ⚔️'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {activeTab === 'single' && (
+            <div className="hero-examples">
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '0.25rem' }}>
+                Try:
+              </span>
+              {EXAMPLE_USERS.map((name) => (
+                <button
+                  key={name}
+                  className="hero-example-chip"
+                  onClick={() => handleExample(name)}
+                  disabled={loading}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          )}
         </motion.div>
       </section>
 

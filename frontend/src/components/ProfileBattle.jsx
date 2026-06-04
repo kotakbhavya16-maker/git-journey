@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
-export default function ProfileBattle() {
+export default function ProfileBattle({ externalResult }) {
   const [username1, setUsername1] = useState('')
   const [username2, setUsername2] = useState('')
   const [loading, setLoading] = useState(false)
@@ -46,50 +46,55 @@ export default function ProfileBattle() {
     setLoading(false)
   }
 
-  const p1 = result?.player1
-  const p2 = result?.player2
-  const battle = result?.battle
+  const activeResult = externalResult || result
+  const p1 = activeResult?.player1
+  const p2 = activeResult?.player2
+  const battle = activeResult?.battle
 
   return (
-    <div className="battle-section" id="battle">
-      <h2 className="battle-title">⚔️ Profile Battle</h2>
-      <p className="battle-subtitle">
-        Compare two GitHub profiles head-to-head
-      </p>
+    <div className={externalResult ? "battle-section-external" : "battle-section"} id="battle">
+      {!externalResult && (
+        <>
+          <h2 className="battle-title">⚔️ Profile Battle</h2>
+          <p className="battle-subtitle">
+            Compare two GitHub profiles head-to-head
+          </p>
 
-      <form onSubmit={handleBattle}>
-        <div className="battle-input-row">
-          <input
-            id="battle-username-1"
-            className="battle-input"
-            type="text"
-            placeholder="Username 1"
-            value={username1}
-            onChange={(e) => setUsername1(e.target.value)}
-            disabled={loading}
-            maxLength={39}
-          />
-          <span className="battle-vs">VS</span>
-          <input
-            id="battle-username-2"
-            className="battle-input"
-            type="text"
-            placeholder="Username 2"
-            value={username2}
-            onChange={(e) => setUsername2(e.target.value)}
-            disabled={loading}
-            maxLength={39}
-          />
-          <button
-            id="battle-btn"
-            className="battle-btn"
-            type="submit"
-            disabled={loading || !username1.trim() || !username2.trim()}
-          >
-            {loading ? '⚡ Fighting...' : '⚔️ Battle!'}
-          </button>
-        </div>
-      </form>
+          <form onSubmit={handleBattle}>
+            <div className="battle-input-row">
+              <input
+                id="battle-username-1"
+                className="battle-input"
+                type="text"
+                placeholder="Username 1"
+                value={username1}
+                onChange={(e) => setUsername1(e.target.value)}
+                disabled={loading}
+                maxLength={39}
+              />
+              <span className="battle-vs">VS</span>
+              <input
+                id="battle-username-2"
+                className="battle-input"
+                type="text"
+                placeholder="Username 2"
+                value={username2}
+                onChange={(e) => setUsername2(e.target.value)}
+                disabled={loading}
+                maxLength={39}
+              />
+              <button
+                id="battle-btn"
+                className="battle-btn"
+                type="submit"
+                disabled={loading || !username1.trim() || !username2.trim()}
+              >
+                {loading ? '⚡ Fighting...' : '⚔️ Battle!'}
+              </button>
+            </div>
+          </form>
+        </>
+      )}
 
       {error && (
         <div className="error-box" style={{ marginBottom: '1.5rem' }}>
@@ -99,7 +104,7 @@ export default function ProfileBattle() {
       )}
 
       <AnimatePresence>
-        {result && p1 && p2 && battle && (
+        {activeResult && p1 && p2 && battle && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

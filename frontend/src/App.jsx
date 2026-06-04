@@ -28,8 +28,18 @@ const LOADING_STEPS = [
   { text: 'Crafting your roast...', icon: '🔥' },
 ]
 
+const BATTLE_LOADING_STEPS = [
+  { text: 'Fetching first profile...', icon: '👤' },
+  { text: 'Fetching second profile...', icon: '👥' },
+  { text: 'Comparing repositories and languages...', icon: '⚔️' },
+  { text: 'Evaluating achievements & stats...', icon: '🏆' },
+  { text: 'AI generating match verdict...', icon: '🧠' },
+]
+
 function App() {
-  const [view, setView] = useState('home') // 'home' | 'loading' | 'results'
+  const [view, setView] = useState('home') // 'home' | 'loading' | 'results' | 'battle-results'
+  const [loadingType, setLoadingType] = useState('single') // 'single' | 'battle'
+  const [battleData, setBattleData] = useState(null)
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [loadingStep, setLoadingStep] = useState(0)
@@ -73,71 +83,260 @@ function App() {
   ]
 
   const exportToPdf = async () => {
-    const cards = document.querySelectorAll('.results-grid > .card, .results-grid > div > .card')
-    if (!cards || cards.length === 0) return
-
+    if (!data) return
     setExportingPdf(true)
     try {
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pageWidth = 210
       const pageHeight = 297
-      const margin = 10
-      const contentWidth = pageWidth - (margin * 2)
+      const margin = 15
+      const contentWidth = pageWidth - (margin * 2) // 180mm
 
-      const paintBackground = (pdfInstance) => {
-        pdfInstance.setFillColor(13, 17, 23) // #0d1117
-        pdfInstance.rect(0, 0, pageWidth, pageHeight, 'F')
-      }
+      // Setup running header & footer helper
+      const addHeaderAndFooter = (pdfInstance, pageNum, totalPages) => {
+        // Header
+        pdfInstance.setFont('helvetica', 'normal')
+        pdfInstance.setFontSize(8)
+        pdfInstance.setTextColor(148, 163, 184) // Slate-400
+        pdfInstance.text('GITJOURNEY DEVELOPER REPORT', margin, 12)
+        pdfInstance.text('gitjourney.dev', pageWidth - margin, 12, { align: 'right' })
+        
+        pdfInstance.setStrokeColor(226, 232, 240) // Slate-200
+        pdfInstance.setLineWidth(0.2)
+        pdfInstance.line(margin, 14, pageWidth - margin, 14)
 
-      let currentY = 15
-
-      // Paint first page background
-      paintBackground(pdf)
-
-      // Add a nice Title Header on the first page
-      pdf.setFont('helvetica', 'bold')
-      pdf.setFontSize(16)
-      pdf.setTextColor(230, 237, 243) // #e6edf3
-      pdf.text(`GitJourney Developer Report: @${data.profile.username}`, margin, currentY)
-      currentY += 12
-
-      for (let i = 0; i < cards.length; i++) {
-        const card = cards[i]
-
-        // Skip shareable card or any hidden cards
-        if (card.classList.contains('share-card-preview') || card.offsetHeight === 0) {
-          continue
-        }
-
-        // Render card
-        const dataUrl = await toPng(card, {
-          backgroundColor: '#1c2333',
-          style: {
-            transform: 'scale(1)',
-            transformOrigin: 'top left',
-          },
-          quality: 0.95,
+        // Footer
+        pdfInstance.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12)
+        pdfInstance.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2, pageHeight - 8, { align: 'center' })
+        
+        const timestamp = new Date().toLocaleDateString('en-US', {
+          year: 'numeric', month: 'short', day: 'numeric'
         })
-
-        // Calculate card height on PDF page
-        const cardWidth = contentWidth
-        const cardHeight = (card.offsetHeight * cardWidth) / card.offsetWidth
-
-        // If card exceeds page height, add a page
-        if (currentY + cardHeight > pageHeight - margin) {
-          pdf.addPage()
-          paintBackground(pdf)
-          currentY = 15 // Reset Y for new page
-        }
-
-        pdf.addImage(dataUrl, 'PNG', margin, currentY, cardWidth, cardHeight)
-        currentY += cardHeight + 8 // spacing between cards
+        pdfInstance.text(`Generated: ${timestamp}`, pageWidth - margin, pageHeight - 8, { align: 'right' })
       }
 
-      pdf.save(`gitjourney-${data.profile.username}.pdf`)
+      // Helper to draw clean section header
+      const addSectionHeader = (pdfInstance, title, y) => {
+        pdfInstance.setFont('helvetica', 'bold')
+        pdfInstance.setFontSize(11)
+        pdfInstance.setTextColor(37, 99, 235) // Blue-600
+        pdfInstance.text(title, margin, y)
+        
+        pdfInstance.setStrokeColor(226, 232, 240) // Slate-200
+        pdfInstance.setLineWidth(0.4)
+        pdfInstance.line(margin, y + 2, pageWidth - margin, y + 2)
+        return y + 7
+      }
+
+      // Helper to wrap and print text paragraphs
+      const drawTextWrapped = (pdfInstance, text, x, y, width, lineHeight) => {
+        const lines = pdfInstance.splitTextToSize(text || '', width)
+        lines.forEach((line) => {
+          pdfInstance.text(line, x, y)
+          y += lineHeight
+        })
+        return y
+      }
+
+      // ============================================
+      // PAGE 1
+      // ============================================
+      addHeaderAndFooter(pdf, 1, 2)
+
+      // Name & Title
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(20)
+      pdf.setTextColor(15, 23, 42) // Slate-900
+      pdf.text(data.profile.name || data.profile.username, margin, 24)
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(11)
+      pdf.setTextColor(37, 99, 235) // Blue-600
+      pdf.text(`@${data.profile.username}`, margin, 30)
+
+      // Location, Company, Joined
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(9)
+      pdf.setTextColor(71, 85, 105) // Slate-600
+      
+      const metaItems = []
+      if (data.profile.location && data.profile.location !== 'Unknown') metaItems.push(`📍 ${data.profile.location}`)
+      if (data.profile.company) metaItems.push(`🏢 ${data.profile.company}`)
+      
+      const joinDate = data.profile.created_at
+        ? new Date(data.profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        : 'Unknown'
+      metaItems.push(`📅 Joined ${joinDate}`)
+      pdf.text(metaItems.join('   |   '), margin, 36)
+
+      // Bio Paragraph
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(10)
+      pdf.setTextColor(71, 85, 105) // Slate-600
+      let currentY = drawTextWrapped(pdf, data.profile.bio, margin, 44, contentWidth, 5)
+
+      // Stats Table Box
+      currentY = Math.max(currentY + 3, 58)
+      pdf.setFillColor(248, 250, 252) // Slate-50 background
+      pdf.rect(margin, currentY, contentWidth, 18, 'F')
+      pdf.setStrokeColor(226, 232, 240) // Slate-200 border
+      pdf.setLineWidth(0.3)
+      pdf.rect(margin, currentY, contentWidth, 18, 'S')
+
+      // Render columns in table
+      const cols = [
+        { label: 'REPOSITORIES', val: data.stats.total_repos },
+        { label: 'TOTAL STARS', val: data.stats.total_stars },
+        { label: 'FOLLOWERS', val: data.profile.followers },
+        { label: 'LANGUAGES', val: data.stats.total_languages },
+        { label: 'ON GITHUB', val: `${data.stats.account_age_years} Years` }
+      ]
+      const colWidth = contentWidth / cols.length // 36mm
+      cols.forEach((col, idx) => {
+        const xCenter = margin + (idx * colWidth) + (colWidth / 2)
+        
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(13)
+        pdf.setTextColor(37, 99, 235) // Blue-600
+        pdf.text(String(col.val), xCenter, currentY + 7, { align: 'center' })
+
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(7.5)
+        pdf.setTextColor(100, 116, 139) // Slate-500
+        pdf.text(col.label, xCenter, currentY + 13, { align: 'center' })
+
+        // Vertical divider line
+        if (idx < cols.length - 1) {
+          const dividerX = margin + ((idx + 1) * colWidth)
+          pdf.line(dividerX, currentY + 2, dividerX, currentY + 16)
+        }
+      })
+
+      // Developer Personality Section
+      currentY = addSectionHeader(pdf, 'DEVELOPER PERSONALITY ANALYSIS', currentY + 26)
+      
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(11)
+      pdf.setTextColor(15, 23, 42) // Slate-900
+      const personalityTitle = `${data.ai?.personality?.emoji || '🧬'} ${data.ai?.personality?.type_name || 'Generic Developer'}`
+      pdf.text(personalityTitle, margin, currentY)
+      currentY += 5.5
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(9.5)
+      pdf.setTextColor(71, 85, 105) // Slate-600
+      currentY = drawTextWrapped(pdf, data.ai?.personality?.description, margin, currentY, contentWidth, 4.8)
+
+      // Primary Languages Section
+      currentY = addSectionHeader(pdf, 'PRIMARY WEAPONS (LANGUAGES)', currentY + 8)
+
+      if (data.languages && data.languages.length > 0) {
+        const topLangs = data.languages.slice(0, 5)
+        topLangs.forEach((lang, idx) => {
+          const rowY = currentY + (idx * 7.5)
+          
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(9.5)
+          pdf.setTextColor(15, 23, 42) // Slate-900
+          pdf.text(lang.name, margin, rowY + 3.5)
+
+          // Draw progress bar
+          const barWidth = 90
+          const barHeight = 3.5
+          const fillWidth = (lang.percentage / 100) * barWidth
+          const barX = margin + 50
+
+          pdf.setFillColor(241, 245, 249) // Slate-100 track
+          pdf.rect(barX, rowY + 0.5, barWidth, barHeight, 'F')
+          
+          pdf.setFillColor(37, 99, 235) // Blue-600 fill
+          pdf.rect(barX, rowY + 0.5, fillWidth, barHeight, 'F')
+
+          // Percentage Label
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(9)
+          pdf.setTextColor(71, 85, 105) // Slate-600
+          pdf.text(`${lang.percentage}%`, barX + barWidth + 6, rowY + 3.5)
+        })
+      } else {
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(10)
+        pdf.setTextColor(148, 163, 184)
+        pdf.text('No language statistics available.', margin, currentY)
+      }
+
+      // ============================================
+      // PAGE 2
+      // ============================================
+      pdf.addPage()
+      addHeaderAndFooter(pdf, 2, 2)
+      
+      currentY = 22
+
+      // AI Journey Summary
+      currentY = addSectionHeader(pdf, 'AI-GENERATED EVOLUTION SUMMARY', currentY)
+      
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(9.5)
+      pdf.setTextColor(71, 85, 105) // Slate-600
+      currentY = drawTextWrapped(pdf, data.ai?.journey_summary, margin, currentY, contentWidth, 4.8)
+
+      // Growth Recommendations
+      currentY = addSectionHeader(pdf, 'PROFESSIONAL GROWTH RECOMMENDATIONS', currentY + 8)
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(9.5)
+      pdf.setTextColor(71, 85, 105) // Slate-600
+      if (data.ai?.tips && data.ai.tips.length > 0) {
+        data.ai.tips.forEach((tip) => {
+          pdf.text('•', margin, currentY)
+          currentY = drawTextWrapped(pdf, tip, margin + 4, currentY, contentWidth - 4, 4.8)
+          currentY += 1.5 // small gap between bullet items
+        })
+      } else {
+        pdf.text('No growth recommendations generated.', margin, currentY)
+        currentY += 6
+      }
+
+      // Coding Journey Timeline
+      currentY = addSectionHeader(pdf, 'ANNUAL REPOSITORY EVOLUTION (TIMELINE)', currentY + 6)
+
+      if (data.timeline && data.timeline.length > 0) {
+        const maxRepos = Math.max(...data.timeline.map((t) => t.repos), 1)
+        data.timeline.forEach((item, idx) => {
+          const rowY = currentY + (idx * 7)
+          
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(9.5)
+          pdf.setTextColor(15, 23, 42) // Slate-900
+          pdf.text(String(item.year), margin, rowY + 3.5)
+
+          // Repos label
+          pdf.setFont('helvetica', 'normal')
+          pdf.setFontSize(8.5)
+          pdf.setTextColor(100, 116, 139) // Slate-500
+          pdf.text(`${item.repos} repos`, margin + 18, rowY + 3.5)
+
+          // Draw progress bar
+          const barWidth = 90
+          const barHeight = 2.5
+          const fillWidth = (item.repos / maxRepos) * barWidth
+          const barX = margin + 45
+
+          pdf.setFillColor(241, 245, 249) // Slate-100
+          pdf.rect(barX, rowY + 1.2, barWidth, barHeight, 'F')
+          
+          pdf.setFillColor(37, 99, 235) // Blue-600
+          pdf.rect(barX, rowY + 1.2, fillWidth, barHeight, 'F')
+        })
+      } else {
+        pdf.text('No annual coding timeline available.', margin, currentY)
+      }
+
+      pdf.save(`gitjourney-report-${data.profile.username}.pdf`)
     } catch (err) {
       console.error('PDF Generation failed:', err)
-      alert('Failed to generate PDF. Try printing the page instead!')
+      alert('Failed to generate professional PDF. Try printing the page instead!')
     } finally {
       setExportingPdf(false)
     }
@@ -149,7 +348,8 @@ function App() {
     setLoadingStep(0)
     const interval = setInterval(() => {
       setLoadingStep((prev) => {
-        if (prev >= LOADING_STEPS.length - 1) {
+        const activeSteps = loadingType === 'battle' ? BATTLE_LOADING_STEPS : LOADING_STEPS
+        if (prev >= activeSteps.length - 1) {
           clearInterval(interval)
           return prev
         }
@@ -157,10 +357,11 @@ function App() {
       })
     }, 1500)
     return () => clearInterval(interval)
-  }, [view])
+  }, [view, loadingType])
 
   const handleSearch = async (username) => {
     setView('loading')
+    setLoadingType('single')
     setError(null)
     setData(null)
     setSearchedUser(username)
@@ -194,9 +395,46 @@ function App() {
     }
   }
 
+  const handleBattleSearch = async (u1, u2) => {
+    setView('loading')
+    setLoadingType('battle')
+    setError(null)
+    setBattleData(null)
+    setSearchedUser(`${u1} vs ${u2}`)
+
+    const token = localStorage.getItem('gitjourney_token') || ''
+    const headers = { 'Content-Type': 'application/json' }
+    if (token) {
+      headers['X-GitHub-Token'] = token
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/battle`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ username1: u1, username2: u2 }),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok || !result.success) {
+        setError(result.error || 'Battle failed. Please try again.')
+        setView('home')
+      } else {
+        setBattleData(result.data)
+        setView('battle-results')
+      }
+    } catch (err) {
+      console.error('Battle API Error:', err)
+      setError(`Could not connect to the backend at ${API_BASE}. Details: ${err.message || 'Network Error'}`)
+      setView('home')
+    }
+  }
+
   const handleBack = () => {
     setView('home')
     setData(null)
+    setBattleData(null)
     setError(null)
   }
 
@@ -212,7 +450,7 @@ function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <HeroSearch onSearch={handleSearch} loading={false} />
+            <HeroSearch onSearch={handleSearch} onBattleSearch={handleBattleSearch} loading={false} />
 
             {error && (
               <div style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
@@ -240,10 +478,10 @@ function App() {
             <div className="loading-section">
               <div className="loading-spinner" />
               <div className="loading-text">
-                Analyzing <strong>@{searchedUser}</strong>...
+                {loadingType === 'battle' ? 'Comparing' : 'Analyzing'} <strong>@{searchedUser}</strong>...
               </div>
               <div className="loading-steps">
-                {LOADING_STEPS.map((step, i) => (
+                {(loadingType === 'battle' ? BATTLE_LOADING_STEPS : LOADING_STEPS).map((step, i) => (
                   <div
                     key={i}
                     className={`loading-step ${
@@ -421,6 +659,33 @@ function App() {
 
               {/* Profile Battle */}
               <ProfileBattle />
+            </div>
+          </motion.div>
+        )}
+
+        {/* ===== BATTLE RESULTS ===== */}
+        {view === 'battle-results' && battleData && (
+          <motion.div
+            key="battle-results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="results-container">
+              <div className="results-header">
+                <button
+                  id="back-btn"
+                  className="results-back-btn"
+                  onClick={handleBack}
+                >
+                  ← Back to Home
+                </button>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  gitjourney / battle
+                </span>
+              </div>
+              <ProfileBattle externalResult={battleData} />
             </div>
           </motion.div>
         )}
