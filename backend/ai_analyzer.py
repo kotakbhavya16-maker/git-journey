@@ -119,13 +119,13 @@ IMPORTANT RULES:
 
 
 def generate_battle_analysis(data1, data2):
-    """Generate AI comparison between two GitHub profiles."""
+    """Generate AI comparison and collaboration analysis between two GitHub profiles."""
     if not configure_gemini():
         return get_fallback_battle(data1, data2)
 
     model = genai.GenerativeModel("gemini-2.0-flash")
 
-    prompt = f"""Compare these two GitHub developers and give a fun, short analysis.
+    prompt = f"""Compare these two GitHub developers, evaluate their coding compatibility as team members, and assign custom project roles based on their strengths.
 
 Developer 1: {data1['profile']['username']}
 - Repos: {data1['stats']['total_repos']}, Stars: {data1['stats']['total_stars']}
@@ -139,7 +139,7 @@ Developer 2: {data2['profile']['username']}
 - Followers: {data2['profile']['followers']}
 - Account age: {data2['stats']['account_age_years']} years
 
-Respond with ONLY this JSON (no markdown):
+Respond with ONLY this JSON schema (no markdown, no code blocks):
 {{
     "winner": "username of overall winner",
     "verdict": "A fun 2-sentence comparison verdict",
@@ -147,7 +147,13 @@ Respond with ONLY this JSON (no markdown):
         {{"name": "Popularity", "winner": "username", "comment": "short fun comment"}},
         {{"name": "Productivity", "winner": "username", "comment": "short fun comment"}},
         {{"name": "Diversity", "winner": "username", "comment": "short fun comment"}}
-    ]
+    ],
+    "compatibility_score": 0-100,
+    "synergy_verdict": "A 2-sentence description of their team chemistry, highlighting how their languages and repositories complement or match each other",
+    "roles": {{
+        "developer1_role": "custom project role for Developer 1 (e.g. Frontend Architect, Systems Engineer)",
+        "developer2_role": "custom project role for Developer 2 (must be complementary to Developer 1's role)"
+    }}
 }}
 """
 
@@ -212,6 +218,44 @@ def get_fallback_battle(data1, data2):
     s2 = data2['stats']['total_stars']
     winner = u1 if s1 >= s2 else u2
 
+    # Logical compatibility score calculation
+    langs1 = set([l['name'].lower() for l in data1.get('languages', [])])
+    langs2 = set([l['name'].lower() for l in data2.get('languages', [])])
+    overlap = len(langs1.intersection(langs2))
+    
+    score = 75
+    if overlap > 0:
+        score += overlap * 4
+    else:
+        # Complementary skills (different stacks) is good too!
+        score += 10
+    
+    score = min(max(score, 60), 98)
+
+    # Determine roles
+    def get_role(languages, alt_role):
+        if not languages:
+            return alt_role
+        top_lang = languages[0]['name'].lower()
+        if top_lang in ['javascript', 'typescript', 'html', 'css']:
+            return "Frontend Specialist"
+        elif top_lang in ['python', 'go', 'java', 'c++', 'c#', 'php', 'ruby', 'rust']:
+            return "Backend Systems Developer"
+        else:
+            return "Software Generalist"
+
+    r1 = get_role(data1.get('languages', []), "Full-Stack Engineer")
+    r2 = get_role(data2.get('languages', []), "Systems Engineer")
+    
+    # Diversify if identical
+    if r1 == r2:
+        if r1 == "Backend Systems Developer":
+            r2 = "Cloud & DevOps Specialist"
+        elif r1 == "Frontend Specialist":
+            r2 = "UI/UX & Interaction Designer"
+        else:
+            r2 = "Technical Project Manager"
+
     return {
         "winner": winner,
         "verdict": f"{winner} takes the crown in this coding showdown! Both developers bring unique strengths to the table.",
@@ -219,7 +263,13 @@ def get_fallback_battle(data1, data2):
             {"name": "Popularity", "winner": u1 if data1['profile']['followers'] >= data2['profile']['followers'] else u2, "comment": "The people have spoken!"},
             {"name": "Productivity", "winner": u1 if data1['stats']['total_repos'] >= data2['stats']['total_repos'] else u2, "comment": "Shipping code like a machine!"},
             {"name": "Diversity", "winner": u1 if data1['stats']['total_languages'] >= data2['stats']['total_languages'] else u2, "comment": "The polyglot wins!"},
-        ]
+        ],
+        "compatibility_score": score,
+        "synergy_verdict": f"{u1} and {u2} show strong alignment. With a compatibility index of {score}%, they possess the balanced technical capabilities needed to ship features rapidly together.",
+        "roles": {
+            "developer1_role": r1,
+            "developer2_role": r2
+        }
     }
 
 

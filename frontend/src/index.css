@@ -3663,4 +3663,324 @@ html, body {
   line-height: 1.4;
 }
 
+/* ============================================
+   CARD STUDIO STYLES
+   ============================================ */
+.card-studio-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.card-studio-preview-pane {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-studio-controls {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+}
+
+.studio-control-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 0.25rem;
+}
+
+.studio-control-title:not(:first-of-type) {
+  margin-top: 1.5rem;
+}
+
+.studio-theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.studio-theme-btn {
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.studio-theme-btn:hover {
+  border-color: var(--accent-cyan);
+  color: var(--text-primary);
+}
+
+.studio-theme-btn.active {
+  background: var(--gradient-primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(88, 166, 255, 0.2);
+}
+
+.studio-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.studio-option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.studio-option-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent-cyan);
+}
+
+.studio-text-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.85rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.studio-text-input:focus {
+  border-color: var(--accent-cyan);
+}
+
+.share-card-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.studio-actions {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .card-studio-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* ============================================
+   PORTFOLIO GENERATOR STYLES
+   ============================================ */
+.portfolio-builder-content {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.portfolio-preview-pane {
+  background: #060913;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-header-bar {
+  background: var(--bg-secondary);
+  border-bottom: 1.5px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.preview-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot-red { background: #ef4444; }
+.dot-yellow { background: #f59e0b; }
+.dot-green { background: #10b981; }
+
+.preview-address-bar {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.portfolio-preview-iframe {
+  flex: 1;
+  border: none;
+  background: #0b0f19;
+}
+
+.portfolio-controls-pane {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.builder-info-box {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px dashed rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.builder-info-box h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 0.5rem;
+}
+
+.builder-info-box ol {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding-left: 1.2rem;
+}
+
+.builder-info-box li {
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .portfolio-builder-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .portfolio-preview-pane {
+    height: 300px;
+  }
+}
+
+/* ============================================
+   COLLABORATION CALCULATOR STYLES
+   ============================================ */
+.battle-player-role {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(37, 99, 235, 0.1);
+  color: #3b82f6;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  margin-top: 0.5rem;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.battle-synergy-section {
+  margin: 2rem 0;
+  width: 100%;
+}
+
+.battle-compatibility-card {
+  display: flex;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%);
+  border: 1.5px solid rgba(99, 102, 241, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  gap: 2rem;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.05);
+}
+
+.compatibility-gauge-wrapper {
+  flex-shrink: 0;
+}
+
+.compatibility-gauge {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 4px solid var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(88, 166, 255, 0.25);
+  background: rgba(6, 9, 19, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.compatibility-gauge-score {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.compatibility-gauge-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  letter-spacing: 0.05em;
+}
+
+.compatibility-details {
+  flex: 1;
+}
+
+.compatibility-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.compatibility-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .battle-compatibility-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+    gap: 1.25rem;
+  }
+}
+
 

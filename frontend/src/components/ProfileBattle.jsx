@@ -125,6 +125,11 @@ export default function ProfileBattle({ externalResult }) {
                 <div className="battle-player-username">
                   @{p1.profile.username}
                 </div>
+                {battle.roles?.developer1_role && (
+                  <div className="battle-player-role">
+                    ⚡ {battle.roles.developer1_role}
+                  </div>
+                )}
                 <div style={{ marginTop: '0.75rem' }}>
                   <div className="profile-stat">
                     <div className="profile-stat-value">{p1.stats.total_repos}</div>
@@ -166,6 +171,11 @@ export default function ProfileBattle({ externalResult }) {
                 <div className="battle-player-username">
                   @{p2.profile.username}
                 </div>
+                {battle.roles?.developer2_role && (
+                  <div className="battle-player-role">
+                    ⚡ {battle.roles.developer2_role}
+                  </div>
+                )}
                 <div style={{ marginTop: '0.75rem' }}>
                   <div className="profile-stat">
                     <div className="profile-stat-value">{p2.stats.total_repos}</div>
@@ -178,6 +188,28 @@ export default function ProfileBattle({ externalResult }) {
                 </div>
               </div>
             </div>
+
+            {/* Synergy & Compatibility Calculator Section */}
+            {battle.compatibility_score !== undefined && (
+              <div className="battle-synergy-section">
+                <div className="battle-compatibility-card">
+                  <div className="compatibility-gauge-wrapper">
+                    <div className="compatibility-gauge">
+                      <div className="compatibility-gauge-score">
+                        {battle.compatibility_score}%
+                      </div>
+                      <div className="compatibility-gauge-label">
+                        Team Synergy
+                      </div>
+                    </div>
+                  </div>
+                  <div className="compatibility-details">
+                    <h3 className="compatibility-title">🤝 Developer Collaboration Verdict</h3>
+                    <p className="compatibility-text">{battle.synergy_verdict}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Verdict */}
             <div className="battle-verdict">

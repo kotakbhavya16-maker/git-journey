@@ -18,6 +18,7 @@ import TopRepos from './components/TopRepos'
 import CommitActivity from './components/CommitActivity'
 import ReadmeGenerator from './components/ReadmeGenerator'
 import ProfileStrength from './components/ProfileStrength'
+import PortfolioBuilder from './components/PortfolioBuilder'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
@@ -929,6 +930,13 @@ function App() {
                 {data && (
                   <div className="grid-col-span-2">
                     <ReadmeGenerator githubData={data} />
+                  </div>
+                )}
+
+                {/* Dev Portfolio Page Builder */}
+                {data && (
+                  <div className="grid-col-span-2">
+                    <PortfolioBuilder githubData={data} />
                   </div>
                 )}
 
