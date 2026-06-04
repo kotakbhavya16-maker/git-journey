@@ -19,6 +19,7 @@ import CommitActivity from './components/CommitActivity'
 import ReadmeGenerator from './components/ReadmeGenerator'
 import ProfileStrength from './components/ProfileStrength'
 import PortfolioBuilder from './components/PortfolioBuilder'
+import GitHubWrapped from './components/GitHubWrapped'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
@@ -905,6 +906,13 @@ function App() {
                       {data.ai.journey_summary}
                     </div>
                   </motion.div>
+                )}
+
+                {/* GitHub Wrapped — Spotify-style yearly recap */}
+                {data && (
+                  <div className="grid-col-span-2">
+                    <GitHubWrapped githubData={data} />
+                  </div>
                 )}
 
                 {/* Profile Strength suggestions */}

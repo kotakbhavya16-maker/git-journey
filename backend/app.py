@@ -13,7 +13,7 @@ import os
 import requests
 
 from github_service import fetch_user_profile, fetch_user_repos, analyze_github_data, fetch_user_events, fetch_repo_details
-from ai_analyzer import generate_ai_analysis, generate_battle_analysis, generate_profile_readme
+from ai_analyzer import generate_ai_analysis, generate_battle_analysis, generate_profile_readme, generate_repo_scan
 import sqlite3
 import time
 import json
@@ -319,6 +319,38 @@ def get_repo_details():
     except Exception as e:
         print(f"Error fetching repo details: {e}")
         return jsonify({"success": False, "error": "Could not fetch repo details."}), 500
+
+
+@app.route("/api/repo/scan", methods=["POST"])
+def scan_repo():
+    """AI-powered repository quality scanner."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "No data provided"}), 400
+
+        username = data.get("username", "").strip()
+        repo_name = data.get("repo", "").strip()
+
+        if not validate_username(username) or not repo_name:
+            return jsonify({"success": False, "error": "Invalid username or repo name."}), 400
+
+        # Retrieve user token if provided
+        user_token = request.headers.get("X-GitHub-Token", "").strip()
+        details = fetch_repo_details(username, repo_name, token=user_token)
+        if not details:
+            return jsonify({"success": False, "error": f"Repository '{repo_name}' not found."}), 404
+
+        # Run AI scan
+        scan_result = generate_repo_scan(details)
+
+        return jsonify({"success": True, "data": scan_result})
+
+    except requests.exceptions.HTTPError as e:
+        return handle_github_error(e)
+    except Exception as e:
+        print(f"Error scanning repo: {e}")
+        return jsonify({"success": False, "error": "Could not scan repository."}), 500
 
 
 @app.route("/api/generate_readme", methods=["POST"])

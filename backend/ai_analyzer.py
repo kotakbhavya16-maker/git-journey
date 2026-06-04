@@ -351,4 +351,189 @@ Feel free to explore my repositories or get in touch for collaboration!
     return {"markdown": markdown.strip()}
 
 
+def generate_repo_scan(repo_data):
+    """Generate AI-powered repository quality analysis using Gemini."""
+    if not configure_gemini():
+        return get_fallback_repo_scan(repo_data)
+
+    model = genai.GenerativeModel("gemini-2.0-flash")
+
+    langs_str = ", ".join([f"{l['name']} ({l['percentage']}%)" for l in (repo_data.get('languages') or [])[:5]])
+    contributors_count = len(repo_data.get('contributors') or [])
+    recent_commits = repo_data.get('recent_commits') or []
+    commits_str = "; ".join([f"{c['message'][:60]}" for c in recent_commits[:3]])
+
+    prompt = f"""You are a senior code reviewer analyzing a GitHub repository. Based on the following repository metadata, generate a quality assessment.
+
+Repository: {repo_data.get('name', 'Unknown')}
+Description: {repo_data.get('description', 'No description')}
+Primary Language: {repo_data.get('language', 'Unknown')}
+All Languages: {langs_str or 'N/A'}
+Stars: {repo_data.get('stars', 0)}
+Forks: {repo_data.get('forks', 0)}
+Watchers: {repo_data.get('watchers', 0)}
+Open Issues: {repo_data.get('open_issues', 0)}
+Size: {repo_data.get('size', 0)} KB
+Is Fork: {repo_data.get('is_fork', False)}
+License: {repo_data.get('license', 'None')}
+Has Wiki: {repo_data.get('has_wiki', False)}
+Topics: {', '.join(repo_data.get('topics') or []) or 'None'}
+Created: {repo_data.get('created_at', 'Unknown')}
+Last Push: {repo_data.get('pushed_at', 'Unknown')}
+Contributors: {contributors_count}
+Recent Commits: {commits_str or 'None available'}
+
+Respond with ONLY this JSON (no markdown, no code blocks):
+{{
+    "quality_score": 0-100,
+    "grade": "S/A/B/C/D",
+    "maturity": "Prototype|Early Stage|Growing|Stable|Production-Ready",
+    "summary": "A 2-sentence assessment of the repository's quality and purpose",
+    "health": {{
+        "has_description": true/false,
+        "has_license": true/false,
+        "has_topics": true/false,
+        "active_development": true/false,
+        "has_contributors": true/false,
+        "good_documentation": true/false
+    }},
+    "strengths": ["strength 1", "strength 2"],
+    "suggestions": ["improvement tip 1", "improvement tip 2", "improvement tip 3"]
+}}
+
+Be realistic and specific. Base scores on actual metrics provided.
+"""
+
+    try:
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1]
+        if text.endswith("```"):
+            text = text.rsplit("```", 1)[0]
+        text = text.replace("```json", "").replace("```", "").strip()
+        return json.loads(text)
+    except Exception as e:
+        print(f"Repo Scan Error: {e}")
+        return get_fallback_repo_scan(repo_data)
+
+
+def get_fallback_repo_scan(repo_data):
+    """Fallback repository quality analysis using heuristics."""
+    score = 40  # base score
+
+    has_description = bool(repo_data.get('description'))
+    has_license = bool(repo_data.get('license'))
+    has_topics = bool(repo_data.get('topics') and len(repo_data['topics']) > 0)
+    has_contributors = bool(repo_data.get('contributors') and len(repo_data['contributors']) > 1)
+    langs = repo_data.get('languages') or []
+    has_multi_lang = len(langs) > 1
+
+    # Score calculation
+    if has_description:
+        score += 8
+    if has_license:
+        score += 10
+    if has_topics:
+        score += 5
+    if has_contributors:
+        score += 10
+    if has_multi_lang:
+        score += 5
+    if repo_data.get('stars', 0) >= 1:
+        score += min(repo_data['stars'] * 2, 10)
+    if repo_data.get('forks', 0) >= 1:
+        score += min(repo_data['forks'] * 3, 8)
+    if repo_data.get('size', 0) > 100:
+        score += 4
+
+    # Active development check
+    active = False
+    pushed = repo_data.get('pushed_at', '')
+    if pushed:
+        try:
+            from datetime import datetime
+            push_date = datetime.strptime(pushed, "%Y-%m-%dT%H:%M:%SZ")
+            days_since = (datetime.utcnow() - push_date).days
+            active = days_since < 90
+            if active:
+                score += 8
+        except Exception:
+            pass
+
+    score = min(max(score, 20), 98)
+
+    # Grade
+    if score >= 90:
+        grade = "S"
+    elif score >= 75:
+        grade = "A"
+    elif score >= 60:
+        grade = "B"
+    elif score >= 45:
+        grade = "C"
+    else:
+        grade = "D"
+
+    # Maturity
+    if score >= 85:
+        maturity = "Production-Ready"
+    elif score >= 70:
+        maturity = "Stable"
+    elif score >= 55:
+        maturity = "Growing"
+    elif score >= 40:
+        maturity = "Early Stage"
+    else:
+        maturity = "Prototype"
+
+    name = repo_data.get('name', 'This repository')
+    lang = repo_data.get('language', 'code')
+
+    # Build suggestions
+    suggestions = []
+    if not has_description:
+        suggestions.append("Add a clear, descriptive README explaining what the project does and how to use it.")
+    if not has_license:
+        suggestions.append("Add an open-source license (MIT, Apache 2.0) to clarify usage rights.")
+    if not has_topics:
+        suggestions.append("Add GitHub topics/tags to improve discoverability in search.")
+    if not active:
+        suggestions.append("Push recent updates to show the project is actively maintained.")
+    if not has_contributors:
+        suggestions.append("Invite collaborators or accept contributions to grow the project.")
+    if len(suggestions) < 3:
+        suggestions.append("Add unit tests and CI/CD pipeline to ensure code quality.")
+
+    strengths = []
+    if has_description:
+        strengths.append("Clear project description")
+    if has_license:
+        strengths.append("Proper open-source licensing")
+    if repo_data.get('stars', 0) > 0:
+        strengths.append(f"Community recognition ({repo_data['stars']} stars)")
+    if active:
+        strengths.append("Actively maintained")
+    if not strengths:
+        strengths.append(f"Built with {lang}")
+
+    return {
+        "quality_score": score,
+        "grade": grade,
+        "maturity": maturity,
+        "summary": f"{name} is a {maturity.lower()} {lang} project with a quality score of {score}/100. "
+                   f"It has {repo_data.get('stars', 0)} stars and {len(langs)} technologies in its stack.",
+        "health": {
+            "has_description": has_description,
+            "has_license": has_license,
+            "has_topics": has_topics,
+            "active_development": active,
+            "has_contributors": has_contributors,
+            "good_documentation": has_description and has_license
+        },
+        "strengths": strengths[:3],
+        "suggestions": suggestions[:3]
+    }
+
+
 

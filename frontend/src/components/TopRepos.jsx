@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import RepoDeepDive from './RepoDeepDive'
+import RepoScanner from './RepoScanner'
 
 const LANG_COLORS = {
   JavaScript: '#f1e05a', Python: '#3572A5', Java: '#b07219',
@@ -13,6 +14,7 @@ const LANG_COLORS = {
 
 export default function TopRepos({ repos, username }) {
   const [selectedRepo, setSelectedRepo] = useState(null)
+  const [scanRepo, setScanRepo] = useState(null)
 
   if (!repos || repos.length === 0) return null
 
@@ -81,7 +83,16 @@ export default function TopRepos({ repos, username }) {
                 </div>
               )}
 
-              <div className="repo-card-click-hint">Click to explore →</div>
+              <div className="repo-card-actions">
+                <span className="repo-card-click-hint">Click to explore →</span>
+                <button
+                  className="repo-scan-btn"
+                  onClick={(e) => { e.stopPropagation(); setScanRepo(repo.name) }}
+                  title="AI Quality Scan"
+                >
+                  🔬 Scan
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -93,6 +104,15 @@ export default function TopRepos({ repos, username }) {
           username={username}
           repoName={selectedRepo}
           onClose={() => setSelectedRepo(null)}
+        />
+      )}
+
+      {/* AI Scanner Modal */}
+      {scanRepo && (
+        <RepoScanner
+          username={username}
+          repoName={scanRepo}
+          onClose={() => setScanRepo(null)}
         />
       )}
     </>
