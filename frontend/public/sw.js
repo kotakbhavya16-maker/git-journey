@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gitjourney-cache-v1';
+const CACHE_NAME = 'gitjourney-cache-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
+  self.skipWaiting(); // Force active immediately
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
@@ -24,7 +25,7 @@ self.addEventListener('activate', (e) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Claim all clients immediately
   );
 });
 
@@ -34,21 +35,22 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // Network-first strategy: Try to get latest from network first
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(e.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
+    fetch(e.request)
+      .then((response) => {
+        // If response is valid, clone and cache it
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseToCache);
+          });
         }
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(e.request, responseToCache);
-        });
         return response;
-      });
-    })
+      })
+      .catch(() => {
+        // Network failed (offline), fallback to cache
+        return caches.match(e.request);
+      })
   );
 });
