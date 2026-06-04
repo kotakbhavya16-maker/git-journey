@@ -2065,6 +2065,130 @@ body {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
+/* .app container transition and background fallback */
+.app {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+
+/* 💼 SLATE MINIMALIST (LIGHT MODE) */
+.theme-slate-minimal {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+  --bg-input: #ffffff;
+  
+  --border-color: #cbd5e1;
+  --border-glow: #0f172a;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  
+  --accent-cyan: #2563eb;       /* Blue-600 */
+  --accent-purple: #4f46e5;     /* Indigo-600 */
+  --accent-green: #10b981;      /* Emerald-500 */
+  --accent-orange: #f59e0b;     /* Amber-500 */
+  --accent-red: #ef4444;        /* Red-500 */
+  --accent-pink: #ec4899;       /* Pink-500 */
+  --accent-yellow: #eab308;     /* Yellow-500 */
+  
+  --heatmap-0: #cbd5e1;
+  --heatmap-1: #86efac;
+  --heatmap-2: #4ade80;
+  --heatmap-3: #22c55e;
+  --heatmap-4: #15803d;
+  
+  --gradient-primary: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  --gradient-hero: radial-gradient(circle at 50% 50%, #ffffff 0%, #f1f5f9 100%);
+  --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  --gradient-glow: linear-gradient(135deg, rgba(15,23,42,0.04), rgba(51,65,85,0.04));
+  
+  --shadow-sm: 0 1px 3px rgba(15,23,42,0.05);
+  --shadow-md: 0 4px 20px rgba(15,23,42,0.06);
+  --shadow-lg: 0 10px 30px rgba(15,23,42,0.08);
+  --shadow-glow: 0 0 30px rgba(37,99,235,0.06);
+  --shadow-glow-purple: 0 0 30px rgba(79,70,229,0.06);
+}
+
+.theme-slate-minimal .card {
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+}
+
+.theme-slate-minimal .card:hover {
+  border-color: #0f172a;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.theme-slate-minimal .repo-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+}
+
+.theme-slate-minimal .repo-card:hover, 
+.theme-slate-minimal .repo-card:focus {
+  background: #f8fafc;
+  border-color: #2563eb;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.06);
+}
+
+.theme-slate-minimal .trait-item,
+.theme-slate-minimal .roast-bubble,
+.theme-slate-minimal .journey-tip,
+.theme-slate-minimal .achievement-badge {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.theme-slate-minimal .roast-card {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+.theme-slate-minimal .roast-bubble {
+  background: #ffffff;
+  color: #1e293b;
+  border-color: #fdebaf;
+}
+
+.theme-slate-minimal .hero-bg-grid {
+  background-image: 
+    linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+}
+
+.theme-slate-minimal .hero-search-box {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+}
+
+.theme-slate-minimal .hero-search-box:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.theme-slate-minimal .tab-switcher {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.theme-slate-minimal .tab-switch-btn {
+  color: #64748b;
+}
+
+.theme-slate-minimal .tab-switch-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+
 /* ============================================
    THEME SELECTOR & PDF BUTTON
    ============================================ */

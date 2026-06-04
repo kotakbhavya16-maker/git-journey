@@ -80,6 +80,7 @@ function App() {
     { id: 'github-dark', label: '🐈 GitHub Dark' },
     { id: 'neon-cyber', label: '👾 Cyberpunk' },
     { id: 'glass-space', label: '🌌 Cosmic Glass' },
+    { id: 'slate-minimal', label: '💼 Minimal Slate' },
   ]
 
   const exportToPdf = async () => {
