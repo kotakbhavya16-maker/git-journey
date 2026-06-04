@@ -3007,6 +3007,60 @@ body {
   background-size: 16px 16px;
 }
 
+/* --- MINIMAL SLATE CARD THEME --- */
+.card-theme-slate {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+.card-theme-slate .tech-corner {
+  border-color: rgba(15, 23, 42, 0.15) !important;
+}
+.card-theme-slate .share-card-name {
+  color: #0f172a !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+.card-theme-slate .share-card-logo {
+  color: #64748b !important;
+  letter-spacing: 0.15em !important;
+}
+.card-theme-slate .share-card-username {
+  color: #2563eb !important; /* Royal Blue */
+}
+.card-theme-slate .share-card-stat-value {
+  color: #0f172a !important;
+}
+.card-theme-slate .share-card-stat-label {
+  color: #64748b !important;
+}
+.card-theme-slate .share-card-stats {
+  background: rgba(15, 23, 42, 0.02) !important;
+  border-color: rgba(15, 23, 42, 0.05) !important;
+}
+.card-theme-slate .share-card-lang-chip {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+.card-theme-slate .share-card-rank-badge {
+  border-color: #64748b !important;
+  color: #334155 !important;
+  background-color: rgba(15, 23, 42, 0.02) !important;
+  box-shadow: none !important;
+}
+.card-theme-slate .barcode-line {
+  background: #0f172a !important;
+}
+.card-theme-slate .share-card-url {
+  color: #64748b !important;
+}
+.card-theme-slate .share-card-personality {
+  color: #475569 !important;
+}
+
+
 /* ============================================
    ULTRA-RESPONSIVE MOBILE BREAKPOINTS (UPDATED)
    ============================================ */

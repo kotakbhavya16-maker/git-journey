@@ -8,7 +8,8 @@ const CARD_THEMES = [
   { id: 'vaporwave', name: '🌅 Vaporwave Grid' },
   { id: 'matrix', name: '🟢 Matrix Terminal' },
   { id: 'gold', name: '✨ Golden Foil' },
-  { id: 'professional', name: '💼 Executive Minimalist' }
+  { id: 'professional', name: '💼 Executive Minimalist' },
+  { id: 'slate', name: '💼 Minimal Slate' }
 ]
 
 export default function ShareableCard({ profile, stats, languages, ai }) {
@@ -48,7 +49,6 @@ export default function ShareableCard({ profile, stats, languages, ai }) {
     const normX = (mouseX / width) - 0.5
     const normY = (mouseY / height) - 0.5
     
-    // Cyberpunk has more glitchy/intense tilt, Matrix is static/rigid, others are normal
     const tiltMultiplier = currentTheme.id === 'cyberpunk' ? 26 : currentTheme.id === 'matrix' ? 8 : 20
     setRotateY(normX * tiltMultiplier)
     setRotateX(-normY * tiltMultiplier)
@@ -73,7 +73,7 @@ export default function ShareableCard({ profile, stats, languages, ai }) {
     try {
       const dataUrl = await toPng(cardRef.current, {
         pixelRatio: 3,
-        backgroundColor: currentTheme.id === 'matrix' ? '#020202' : '#09090e',
+        backgroundColor: currentTheme.id === 'slate' ? '#f8fafc' : currentTheme.id === 'matrix' ? '#020202' : '#09090e',
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
