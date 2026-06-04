@@ -18,7 +18,6 @@ import TopRepos from './components/TopRepos'
 import CommitActivity from './components/CommitActivity'
 import ReadmeGenerator from './components/ReadmeGenerator'
 import ProfileStrength from './components/ProfileStrength'
-import GitJourneyChatbot from './components/GitJourneyChatbot'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
@@ -952,8 +951,6 @@ function App() {
               {/* Profile Battle */}
               <ProfileBattle />
 
-              {/* AI Chatbot Assistant */}
-              <GitJourneyChatbot githubData={data} />
             </div>
           </motion.div>
         )}
