@@ -361,31 +361,36 @@ function App() {
         pdf.text('No language statistics available.', margin + 5, langContentY + 18)
       }
 
-      // Community Habits & Roast Section (Parchment Tint)
+      // Profile Strengthening Suggestions Section
       const roastY = langContentY + 42
-      const roastContentY = addSectionHeader(pdf, 'COMMUNITY HABITS & AI ROAST', roastY)
+      const roastContentY = addSectionHeader(pdf, 'PROFILE STRENGTHENING SUGGESTIONS', roastY)
 
-      pdf.setFillColor(254, 252, 243) // Warm light tint
-      pdf.setDrawColor(245, 158, 11) // Amber-500 border
+      pdf.setFillColor(240, 249, 255) // Soft Blue-50
+      pdf.setDrawColor(147, 197, 253) // Blue-300 border
       pdf.setLineWidth(0.35)
       pdf.roundedRect(margin, roastContentY, contentWidth, 24, 2.5, 2.5, 'FD')
 
-      // Vibe Title
-      pdf.setFont('helvetica', 'bold')
-      pdf.setFontSize(8.5)
-      pdf.setTextColor(180, 83, 9) // Amber-700
-      const roastVibe = data.ai?.roast?.overall_vibe || 'Intriguing Developer'
-      pdf.text(`Vibe Check: ${roastVibe}`, margin + 5, roastContentY + 5.5)
+      if (data.ai?.tips && data.ai.tips.length > 0) {
+        data.ai.tips.slice(0, 3).forEach((tip, idx) => {
+          const tipRowY = roastContentY + 4.2 + idx * 6.5
+          
+          // Bullet point circle icon
+          pdf.setFillColor(37, 99, 235) // Blue-600
+          pdf.circle(margin + 5, tipRowY + 1.2, 1, 'F')
 
-      // Roast content
-      pdf.setFont('helvetica', 'italic')
-      pdf.setFontSize(7.8)
-      pdf.setTextColor(120, 53, 4) // Amber-800
-      const roastText = data.ai?.roast?.lines ? data.ai.roast.lines.slice(0, 2).join('   //   ') : 'No observations compiled.'
-      const roastLines = pdf.splitTextToSize(roastText, contentWidth - 10)
-      roastLines.slice(0, 2).forEach((line, idx) => {
-        pdf.text(line, margin + 5, roastContentY + 11.5 + idx * 4)
-      })
+          // Wrap suggestion
+          pdf.setFont('helvetica', 'normal')
+          pdf.setFontSize(8)
+          pdf.setTextColor(30, 41, 59) // Slate-800
+          const wrappedTipLines = pdf.splitTextToSize(tip, contentWidth - 14)
+          pdf.text(wrappedTipLines[0] || '', margin + 9, tipRowY + 2.1)
+        })
+      } else {
+        pdf.setFont('helvetica', 'italic')
+        pdf.setFontSize(8.5)
+        pdf.setTextColor(148, 163, 184)
+        pdf.text('No strengthening tips available at this time.', margin + 6, roastContentY + 12)
+      }
 
       // ============================================
       // PAGE 2
@@ -530,35 +535,49 @@ function App() {
         pdf.text('No annual coding timeline records found.', margin + 6, timelineContentY + 12)
       }
 
-      // Section: Career recommendations
+      // Section: Top Repositories & Projects
       const recommendationsY = timelineContentY + 42
-      const recommendationsContentY = addSectionHeader(pdf, 'ACTIONABLE CAREER & GROWTH RECOMMENDATIONS', recommendationsY)
+      const recommendationsContentY = addSectionHeader(pdf, 'TOP REPOSITORIES & PROJECTS', recommendationsY)
 
       pdf.setFillColor(248, 250, 252)
       pdf.setDrawColor(226, 232, 240)
       pdf.setLineWidth(0.3)
       pdf.roundedRect(margin, recommendationsContentY, contentWidth, 31, 2.5, 2.5, 'FD')
 
-      if (data.ai?.tips && data.ai.tips.length > 0) {
-        data.ai.tips.slice(0, 3).forEach((tip, idx) => {
-          const tipRowY = recommendationsContentY + 4.5 + idx * 8
+      const topRepos = data.repos ? data.repos.slice(0, 3) : []
+      if (topRepos.length > 0) {
+        topRepos.forEach((repo, idx) => {
+          const repoRowY = recommendationsContentY + 3.2 + idx * 8.8
           
-          // Bullet point circle icon
-          pdf.setFillColor(37, 99, 235) // Blue-600
-          pdf.circle(margin + 5, tipRowY + 1, 1, 'F')
+          // Repo Name
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(8.2)
+          pdf.setTextColor(37, 99, 235) // Blue-600
+          pdf.text(repo.name, margin + 5, repoRowY + 2)
 
-          // Wrap recommendation
+          // Repo Meta (Language & Stars)
+          const repoMeta = []
+          if (repo.language) repoMeta.push(repo.language)
+          repoMeta.push(`⭐ ${repo.stars || 0}`)
+          
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(7.5)
+          pdf.setTextColor(100, 116, 139) // Slate-500
+          pdf.text(repoMeta.join('  •  '), margin + 52, repoRowY + 2)
+
+          // Description
           pdf.setFont('helvetica', 'normal')
-          pdf.setFontSize(8)
+          pdf.setFontSize(7.5)
           pdf.setTextColor(71, 85, 105) // Slate-600
-          const wrappedTipLines = pdf.splitTextToSize(tip, contentWidth - 14)
-          pdf.text(wrappedTipLines[0] || '', margin + 9, tipRowY + 2)
+          const descText = repo.description || 'No repository description provided.'
+          const descLines = pdf.splitTextToSize(descText, 115)
+          pdf.text(descLines[0] || '', margin + 5, repoRowY + 5.2)
         })
       } else {
         pdf.setFont('helvetica', 'italic')
         pdf.setFontSize(8.5)
         pdf.setTextColor(148, 163, 184)
-        pdf.text('No recommendations available at this time.', margin + 6, recommendationsContentY + 10)
+        pdf.text('No repository data available at this time.', margin + 6, recommendationsContentY + 12)
       }
 
       pdf.save(`gitjourney-report-${data.profile.username}.pdf`)
